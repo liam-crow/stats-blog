@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on A Hugo website</title>
+    <link>/post/</link>
+    <description>Recent content in Posts on A Hugo website</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    
+	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Welcome To My Blog!</title>
+      <link>/1/01/01/welcome-to-my-blog/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      
+      <guid>/1/01/01/welcome-to-my-blog/</guid>
+      <description>Who Am I?My name is Liam, and I’m a Data scientist. I currently work in financial research, and have a keen interest in R, open source data and football (AFL).
+What Will I Post About?I don’t know, mainly footy related, a bit of government and council data. Whatever takes my interest, I guess.
+</description>
+    </item>
+    
+  </channel>
+</rss>
