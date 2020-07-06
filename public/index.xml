@@ -1,14 +1,25 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>A Hugo website</title>
+    <title>Crow Data Science</title>
     <link>/</link>
-    <description>Recent content on A Hugo website</description>
+    <description>Recent content on Crow Data Science</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
+    <lastBuildDate>Mon, 06 Jul 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Introduction to AFL Analytics with Useless AFL Stats</title>
+      <link>/2020/07/06/introduction-to-afl-analysis-with-useless-afl-stats/</link>
+      <pubDate>Mon, 06 Jul 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/07/06/introduction-to-afl-analysis-with-useless-afl-stats/</guid>
+      <description>I’m co-admin of a little page on Facebook that caters to a niche audience of AFL statistics nerds known as Useless AFL Stats, where (founder and co-admin) Aaron and I discover stats that have no relevance to anything at all, and will never be useful to anyone, ever. And that got me thinking, why should I have all the fun finding these nuggets of gold?
+I’m a firm believer in open source programming and data, the idea that as much data should be made publicly available as possible to the largest possible audience.</description>
+    </item>
     
     <item>
       <title>About</title>
@@ -16,18 +27,9 @@
       <pubDate>Thu, 05 May 2016 21:48:51 -0700</pubDate>
       
       <guid>/about/</guid>
-      <description>This is a &amp;ldquo;hello world&amp;rdquo; example website for the blogdown package. The theme was forked from @jrutheiser/hugo-lithium-theme and modified by Yihui Xie.</description>
-    </item>
-    
-    <item>
-      <title>Welcome To My Blog!</title>
-      <link>/1/01/01/welcome-to-my-blog/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>/1/01/01/welcome-to-my-blog/</guid>
-      <description>Who Am I?My name is Liam, and I’m a Data scientist. I currently work in financial research, and have a keen interest in R, open source data and football (AFL).
-What Will I Post About?I don’t know, mainly footy related, a bit of government and council data. Whatever takes my interest, I guess.
-</description>
+      <description>Who am I? My name is Liam, and I&amp;rsquo;m a Data scientist. I currently work in financial research, and have a keen interest in R, open source data and football (AFL).
+What will I post about? I don&amp;rsquo;t know, mainly footy related, a bit of government and council data. Whatever takes my interest, I guess.
+What theme is this? The theme was downloaded from @jrutheiser/hugo-lithium-theme and modified by Yihui Xie.</description>
     </item>
     
   </channel>
