@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Introduction to R on Crow Data Science</title>
+    <link>/tags/introduction-to-r/</link>
+    <description>Recent content in Introduction to R on Crow Data Science</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 06 Jul 2020 00:00:00 +0000</lastBuildDate>
+    
+	<atom:link href="/tags/introduction-to-r/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>Introduction to AFL Analytics with Useless AFL Stats</title>
+      <link>/2020/07/06/introduction-to-afl-analysis-with-useless-afl-stats/</link>
+      <pubDate>Mon, 06 Jul 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/07/06/introduction-to-afl-analysis-with-useless-afl-stats/</guid>
+      <description>I’m co-admin of a little page on Facebook that caters to a niche audience of AFL statistics nerds known as Useless AFL Stats, where (founder and co-admin) Aaron and I discover stats that have no relevance to anything at all, and will never be useful to anyone, ever. And that got me thinking, why should I have all the fun finding these nuggets of gold?
+I’m a firm believer in open source programming and data, the idea that as much data should be made publicly available as possible to the largest possible audience.</description>
+    </item>
+    
+  </channel>
+</rss>
