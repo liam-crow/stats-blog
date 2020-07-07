@@ -24,12 +24,12 @@ I’m a firm believer in open source programming and data, the idea that as much
     <item>
       <title>About</title>
       <link>/about/</link>
-      <pubDate>Thu, 05 May 2016 21:48:51 -0700</pubDate>
+      <pubDate>Wed, 01 Jan 2020 00:00:00 +0000</pubDate>
       
       <guid>/about/</guid>
       <description>Who am I? My name is Liam, and I&amp;rsquo;m a Data scientist. I currently work in financial research, and have a keen interest in R, open source data and football (AFL).
 What will I post about? I don&amp;rsquo;t know, mainly footy related, a bit of government and council data. Whatever takes my interest, I guess.
-What theme is this? The theme was downloaded from @jrutheiser/hugo-lithium-theme and modified by Yihui Xie.</description>
+Where does the AFL data come from? My main reference is afltables.com, and I use fitzRoy to import this data into R.</description>
     </item>
     
   </channel>

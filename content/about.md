@@ -1,5 +1,5 @@
 ---
-date: "2016-05-05T21:48:51-07:00"
+date: "2020-01-01"
 title: About
 ---
 
@@ -11,6 +11,7 @@ My name is Liam, and I'm a Data scientist. I currently work in financial researc
 
 I don't know, mainly footy related, a bit of government and council data. Whatever takes my interest, I guess.
 
-### What theme is this?
+### Where does the AFL data come from?
 
-The theme was downloaded from [@jrutheiser/hugo-lithium-theme](https://github.com/jrutheiser/hugo-lithium-theme) and modified by [Yihui Xie](https://github.com/yihui/hugo-lithium).
+My main reference is afltables.com, and I use fitzRoy to import this data into R.
+
