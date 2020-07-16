@@ -34,7 +34,7 @@ I’m a firm believer in open source programming and data, the idea that as much
 I’m a firm believer in open source programming and data, the idea that as much data should be made publicly available as possible to the largest possible audience.">
 <meta itemprop="datePublished" content="2020-07-06T00:00:00&#43;00:00" />
 <meta itemprop="dateModified" content="2020-07-06T00:00:00&#43;00:00" />
-<meta itemprop="wordCount" content="3289">
+<meta itemprop="wordCount" content="3283">
 
 
 
@@ -268,7 +268,7 @@ I’m a firm believer in open source programming and data, the idea that as much
             <i class="fa fa-calendar"></i>
             <time datetime="2020-07-06 00:00:00 &#43;0000 UTC" itemprop="datePublished">2020-07-06</time>
             &middot;
-            3289
+            3283
             words
             &middot;
             16
@@ -401,7 +401,9 @@ d</code></pre>
 install.packages(&quot;dplyr&quot;)    #data manipulation tools
 install.packages(&quot;tidyr&quot;)    #more data manipulation tools
 install.packages(&quot;snakecase&quot;)#data cleaning tool
+install.packages(&quot;hms&quot;)      #date formatting
 devtools::install_github(&quot;jimmyday12/fitzRoy&quot;) #package that loads afltables into R</code></pre>
+<p>Ingore the warning about “Rtools”, it’s a windows development tool that we won’t be using.</p>
 </div>
 <div id="loading-packages" class="section level2">
 <h2>Loading packages</h2>
@@ -418,7 +420,7 @@ library(fitzRoy)</code></pre>
 <p>Now that we have everything set up, we can dive right in to the stats. We are going to load in data from <a href="https://afltables.com/afl/afl_index.html">afltables.com</a> using <a href="https://github.com/jimmyday12/fitzRoy">fitzRoy</a>, and R package put together by <a href="https://twitter.com/jamesday87">James Day</a> that contains most of the match data in a consistent structure.</p>
 <p>Lets load in all the data from the year 2000 onwards and assign it to a variable.</p>
 <pre class="r"><code>afltables &lt;- get_afltables_stats(start_date = &#39;2000-01-01&#39;)</code></pre>
-<pre><code>## Returning data from 2000-01-01 to 2020-07-06</code></pre>
+<pre><code>## Returning data from 2000-01-01 to 2020-07-16</code></pre>
 <pre><code>## Downloading data</code></pre>
 <pre><code>## 
 ## Finished downloading data. Processing XMLs</code></pre>
@@ -426,7 +428,7 @@ library(fitzRoy)</code></pre>
 <pre class="r"><code># afltables &lt;- get_afltables_stats() will pull in all the data from 1897</code></pre>
 <p>Now that the data is loaded into our workspace, you can see in the ‘Environment’ tab that we have 172 thousand rows (observations) and 59 columns (variables). We can confirm this with the <code>dim</code> (short for dimensions) function. Loading in the data from 1897 will have over 600k rows.</p>
 <pre class="r"><code>dim(afltables) #rows by columns</code></pre>
-<pre><code>## [1] 173096     59</code></pre>
+<pre><code>## [1] 173492     59</code></pre>
 <p>Lets use the head command, which shows the top 6 or so rows of our dataset.</p>
 <pre class="r"><code>head(afltables)</code></pre>
 <pre><code>## # A tibble: 6 x 59
@@ -533,7 +535,7 @@ names(afltables) # now the column headers are in lowercase and have dots replace
 <p>Now that the data is loaded and in a format we can easily manipulate, lets take a look at some basic functions. <code>dplyr</code> has built in functions to make this process as painless as possible. Firstly, lets look at <code>select</code>, and function that keeps the columns we want to investigate. Also we are going to be making use of <code>%&gt;%</code>, known as a pipe, to channel our data through various functions. A shortcut for the command is <code>Ctrl</code> + <code>Shift</code> + <code>m</code>.</p>
 <pre class="r"><code>afltables %&gt;% 
   select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs)</code></pre>
-<pre><code>## # A tibble: 173,096 x 9
+<pre><code>## # A tibble: 173,492 x 9
 ##    season round date          id first_name surname jumper_no kicks handballs
 ##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
 ##  1   2000 1     2000-03-11    12 Mark       Bickley        26    16         3
@@ -546,7 +548,7 @@ names(afltables) # now the column headers are in lowercase and have dots replace
 ##  8   2000 1     2000-03-11    35 Shane      Ellen          13    10         2
 ##  9   2000 1     2000-03-11    51 Simon      Goodwin        36    10         8
 ## 10   2000 1     2000-03-11    22 Ben        Hart           34     7         2
-## # ... with 173,086 more rows</code></pre>
+## # ... with 173,482 more rows</code></pre>
 </div>
 <div id="combining-mutating-columns" class="section level2">
 <h2>Combining (mutating) columns</h2>
@@ -554,7 +556,7 @@ names(afltables) # now the column headers are in lowercase and have dots replace
 <pre class="r"><code>afltables %&gt;% 
   select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs) %&gt;% 
   mutate(disposals = kicks + handballs) #name of our new column goes on the left hand side</code></pre>
-<pre><code>## # A tibble: 173,096 x 10
+<pre><code>## # A tibble: 173,492 x 10
 ##    season round date          id first_name surname jumper_no kicks handballs
 ##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
 ##  1   2000 1     2000-03-11    12 Mark       Bickley        26    16         3
@@ -567,7 +569,7 @@ names(afltables) # now the column headers are in lowercase and have dots replace
 ##  8   2000 1     2000-03-11    35 Shane      Ellen          13    10         2
 ##  9   2000 1     2000-03-11    51 Simon      Goodwin        36    10         8
 ## 10   2000 1     2000-03-11    22 Ben        Hart           34     7         2
-## # ... with 173,086 more rows, and 1 more variable: disposals &lt;dbl&gt;</code></pre>
+## # ... with 173,482 more rows, and 1 more variable: disposals &lt;dbl&gt;</code></pre>
 </div>
 <div id="filtering-our-data" class="section level2">
 <h2>Filtering our data</h2>
@@ -576,7 +578,7 @@ names(afltables) # now the column headers are in lowercase and have dots replace
   select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs) %&gt;% 
   mutate(disposals = kicks + handballs) %&gt;% 
   filter(disposals == jumper_no)</code></pre>
-<pre><code>## # A tibble: 3,675 x 10
+<pre><code>## # A tibble: 3,680 x 10
 ##    season round date          id first_name surname jumper_no kicks handballs
 ##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
 ##  1   2000 1     2000-03-11    77 James      Byrne           6     5         1
@@ -589,7 +591,7 @@ names(afltables) # now the column headers are in lowercase and have dots replace
 ##  8   2000 9     2000-05-06    56 Nathan     Bassett         8     6         2
 ##  9   2000 9     2000-05-06   777 Glenn      Archer         11     8         3
 ## 10   2000 11    2000-05-21    79 Andrew     Crowell         1     0         1
-## # ... with 3,665 more rows, and 1 more variable: disposals &lt;dbl&gt;</code></pre>
+## # ... with 3,670 more rows, and 1 more variable: disposals &lt;dbl&gt;</code></pre>
 </div>
 <div id="arranging-by-a-column" class="section level2">
 <h2>Arranging by a column</h2>
@@ -599,7 +601,7 @@ names(afltables) # now the column headers are in lowercase and have dots replace
   mutate(disposals = kicks + handballs) %&gt;% 
   filter(disposals == jumper_no) %&gt;% 
   arrange(desc(jumper_no))</code></pre>
-<pre><code>## # A tibble: 3,675 x 10
+<pre><code>## # A tibble: 3,680 x 10
 ##    season round date          id first_name surname jumper_no kicks handballs
 ##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
 ##  1   2016 18    2016-07-24 11787 Tom        Rockli~        38    24        14
@@ -612,7 +614,7 @@ names(afltables) # now the column headers are in lowercase and have dots replace
 ##  8   2009 18    2009-08-01  1460 Dane       Swan           36    19        17
 ##  9   2010 16    2010-07-17  1460 Dane       Swan           36    21        15
 ## 10   2012 4     2012-04-21  1460 Dane       Swan           36    18        18
-## # ... with 3,665 more rows, and 1 more variable: disposals &lt;dbl&gt;</code></pre>
+## # ... with 3,670 more rows, and 1 more variable: disposals &lt;dbl&gt;</code></pre>
 <p>And there we have it, your first useless AFL stat. You should see Tom Rockliff up the top with 2 games of 38 disposals wearing the number 38. Useless.</p>
 </div>
 <div id="group-by-and-summarise" class="section level2">
@@ -663,13 +665,13 @@ names(afltables) # now the column headers are in lowercase and have dots replace
 ##  1   2000  5626  3705     60.3
 ##  2   2008  5238  3482     60.1
 ##  3   2005  5118  3439     59.8
-##  4   2020   814   553     59.5
-##  5   2001  5258  3586     59.5
-##  6   2015  5176  3536     59.4
-##  7   2003  5101  3546     59.0
-##  8   2002  5121  3563     59.0
-##  9   2004  5012  3504     58.9
-## 10   2007  5107  3581     58.8
+##  4   2001  5258  3586     59.5
+##  5   2015  5176  3536     59.4
+##  6   2003  5101  3546     59.0
+##  7   2002  5121  3563     59.0
+##  8   2004  5012  3504     58.9
+##  9   2007  5107  3581     58.8
+## 10   2013  5561  3907     58.7
 ## # ... with 11 more rows</code></pre>
 <p>Nice, we can see that the year 2000 has the highest accuracy. Another question we might ask is which round in each season has the highest accuracy? We can group by a second variable, round.</p>
 <pre class="r"><code>afltables %&gt;% 
@@ -684,7 +686,7 @@ names(afltables) # now the column headers are in lowercase and have dots replace
     accuracy = sum_g/(sum_g+sum_b)*100
   ) %&gt;% 
   arrange(desc(accuracy))</code></pre>
-<pre><code>## # A tibble: 555 x 5
+<pre><code>## # A tibble: 556 x 5
 ##    season round sum_g sum_b accuracy
 ##     &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
 ##  1   2005 EF       64    28     69.6
@@ -697,14 +699,13 @@ names(afltables) # now the column headers are in lowercase and have dots replace
 ##  8   2008 EF       61    32     65.6
 ##  9   2005 PF       49    26     65.3
 ## 10   2007 16      250   135     64.9
-## # ... with 545 more rows</code></pre>
+## # ... with 546 more rows</code></pre>
 <p>Nice, 2005 Elimination finals games were at nearly 70% kicking accuracy. <code>group_by</code> and <code>summarise</code> work really well together, and you can switch out <code>sum</code> with <code>mean</code> for the average, or <code>max</code> and <code>min</code> for the maximum and minimum in each group. The possibilities are endless.</p>
 </div>
 </div>
 <div id="conclusion" class="section level1">
 <h1>Conclusion</h1>
 <p>Thanks for making it this far, hopefully its given you a taste of the potential insights (useful or useless) that R and AFL have to offer. This is hopefully the first in a series of tutorials about AFL analytics in R. You can contact us on twitter or Facebook, let us know what you found interesting, insightful, difficult, any other types of stats you’d like to see recreated in upcoming posts.</p>
-<p>PS Aaron and I are looking for another admin for the creation of stats, answering questions so please let us know if you’re interested.</p>
 </div>
 
         </div>
