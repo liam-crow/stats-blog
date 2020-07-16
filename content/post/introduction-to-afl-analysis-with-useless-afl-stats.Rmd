@@ -107,8 +107,11 @@ install.packages("devtools") #allows us to download from github
 install.packages("dplyr")    #data manipulation tools
 install.packages("tidyr")    #more data manipulation tools
 install.packages("snakecase")#data cleaning tool
+install.packages("hms")      #date formatting
 devtools::install_github("jimmyday12/fitzRoy") #package that loads afltables into R
 ```
+
+Ingore the warning about "Rtools", it's a windows development tool that we won't be using.
 
 ## Loading packages
 
@@ -271,7 +274,3 @@ Nice, 2005 Elimination finals games were at nearly 70% kicking accuracy. `group_
 # Conclusion
 
 Thanks for making it this far, hopefully its given you a taste of the potential insights (useful or useless) that R and AFL have to offer. This is hopefully the first in a series of tutorials about AFL analytics in R. You can contact us on twitter or Facebook, let us know what you found interesting, insightful, difficult, any other types of stats you'd like to see recreated in upcoming posts.
-
-PS Aaron and I are looking for another admin for the creation of stats, answering questions so please let us know if you're interested.
-
-

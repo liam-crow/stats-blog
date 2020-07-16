@@ -6,10 +6,20 @@
     <description>Recent content in R on Crow Data Science</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Mon, 06 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 07 Jul 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/r/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Can you tell if a players&#39; game is worthy of a brownlow vote?</title>
+      <link>/2020/07/07/can-you-tell-if-a-players-game-is-worthy-of-a-brownlow-vote/</link>
+      <pubDate>Tue, 07 Jul 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/07/07/can-you-tell-if-a-players-game-is-worthy-of-a-brownlow-vote/</guid>
+      <description>IntroductionThe Brownlow medal, one of the most prestigious AFL awards, is notoriously difficult to predict. You can read this article from Fat Stats for a great look as to why. Here’s a quick summary:
+Umpires are human and have their own biasesHighly predictive stats from last year may not be predictive this yearMedia influence may impact umpires when they voteAnother point that I’d like to throw into the mix:</description>
+    </item>
     
     <item>
       <title>Introduction to AFL Analytics with Useless AFL Stats</title>
