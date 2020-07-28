@@ -1,0 +1,409 @@
+---
+title: "Introduction to AFL Analytics with Useless AFL Stats"
+author: Liam Crowhurst
+date: '2020-07-16'
+slug: introduction-afl-analytics-data-R
+categories:
+  - AFL Data Tutorial
+tags:
+  - R
+  - Useless AFL Stats
+  - Introduction to R
+banner: ''
+description: 'A beginners guide to AFL analytics and programming in R!'
+images: []
+menu: ''
+---
+
+
+
+<p>I’m co-admin of a little page on Facebook that caters to a niche audience of AFL statistics nerds known as <a href="https://www.facebook.com/uselessaflstats" target="blank">Useless AFL Stats</a>, where (founder and co-admin) Aaron and I discover stats that have no relevance to anything at all, and will never be useful to anyone, ever. And that got me thinking, why should I have all the fun finding these nuggets of gold?</p>
+<p>I’m a firm believer in open source programming and data, the idea that as much data should be made publicly available as possible to the largest possible audience. After all, 1000 plus brains are going to be more innovative, better at analysing trends, faster at fact checking (and creating useless AFL stats) than just 2.</p>
+<p>That’s why I’ll be taking you on a journey from beginner to expert, to give you the tools to be the master of your own AFL data analysis. Key points will be covered in this first post:</p>
+<ul>
+<li>Setup of your coding workspace
+<ul>
+<li>R installation</li>
+<li>Rstudio installation and setup</li>
+</ul></li>
+<li>Basics of R</li>
+<li>Downloading AFL data</li>
+<li>Creating your first useless AFL stat</li>
+</ul>
+<p>If you have any questions during this tutorial, you can tweet at me <a href="https://twitter.com/crow_data_sci" target="blank">@crow_data_sci</a>. If you’ve got a useless stat, feel free to tweet at us <a href="https://twitter.com/UselessStatsAFL" target="blank">@UselessStatsAFL</a> or message the page.</p>
+<p>Ok, let get into the setup!</p>
+<div id="r-and-rstudio-installation" class="section level1">
+<h1>R and RStudio Installation</h1>
+<p>The program that we’ll be using to generate stats is <a href="https://www.r-project.org/" target="blank">R</a>, a powerful tool commonly used by professional statisticians and data scientists in academia and industry, but we’ll be using it to shitpost about AFL stats.</p>
+<p>We’ll be downloading R from here <a href="https://cran.csiro.au/" target="blank">https://cran.csiro.au/</a> and choose the version for your OS. I’d recommend all the default file locations and setup.</p>
+<p>We’ll also be using RStudio, a Graphical User Interface (GUI) that allows for easier use of the R language. Download the free version here at <a href="https://rstudio.com/products/rstudio/download/" target="blank">https://rstudio.com/products/rstudio/download/</a>.</p>
+<p>Once they’ve been downloaded, open up your newly installed RStudio program. It should automatically find R and open up an interface. Think of R as the frame, steering wheel and engine of a car. You can get pretty far with just that, but RStudio completes the car, adding all the bells and whistles for a more comfortable journey. God that’s a terrible analogy.</p>
+<div id="basics-of-r" class="section level2">
+<h2>Basics of R</h2>
+<p>Anyway, you should see a screen and tab named ‘Console’. This is where all the the commands get executed, lets try a couple out.</p>
+<pre class="r"><code>1+1</code></pre>
+<pre><code>## [1] 2</code></pre>
+<pre class="r"><code>2*4</code></pre>
+<pre><code>## [1] 8</code></pre>
+<pre class="r"><code>3^3</code></pre>
+<pre><code>## [1] 27</code></pre>
+<p>Nice, what you’ll see is that the answer has been calculated and result has been produced on the next line.</p>
+<p>Let’s save these results, we may want to use them later. In R we use an assignment command <code>&lt;-</code>, which looks like a backwards arrow. You can assign a result to any string of characters. You can also assign characters (like names, teams, locations, etc) to variables too.</p>
+<pre class="r"><code>a &lt;- 1+1
+b &lt;- 2*4
+c &lt;- 3^3
+first_name &lt;- &#39;John&#39;</code></pre>
+<p>If you look at the ‘Environment’ tab in the top right section, we can see our newly created variables, which we can use later on. Variables can be used in commands with each other too. You can’t add strings to numbers though.</p>
+<pre class="r"><code>a + b * c</code></pre>
+<pre><code>## [1] 218</code></pre>
+<p>Another important concept are vectors, a data structure that can hold multiple values. We use <code>c()</code> to denote a vector and we can insert multiple values.</p>
+<pre class="r"><code>d &lt;- c(3,7,8,2)
+teams &lt;- c(&#39;WCE&#39;,&#39;Freo&#39;,&#39;Geel&#39;)
+d</code></pre>
+<pre><code>## [1] 3 7 8 2</code></pre>
+<pre class="r"><code>d*2</code></pre>
+<pre><code>## [1]  6 14 16  4</code></pre>
+<pre class="r"><code>d[3]</code></pre>
+<pre><code>## [1] 8</code></pre>
+<pre class="r"><code>teams[2]</code></pre>
+<pre><code>## [1] &quot;Freo&quot;</code></pre>
+<p>We can multiply and add to vectors and use square brackets to pull out certain indexes (positions) of the vector. Press the up arrow to cycle backwards through your previous commands.</p>
+</div>
+<div id="projects" class="section level2">
+<h2>Projects</h2>
+<p>Projects help contain all of your data and files in an easy to maintain structure. We’ll create one for all of our AFL data analysis.</p>
+<ol style="list-style-type: decimal">
+<li>Click the dropdown menu in the top right corner</li>
+<li>New project (and save)</li>
+<li>New Directory</li>
+<li>New Project</li>
+<li>Name it (<code>AFL_Scripts</code> or something similar)</li>
+</ol>
+<p>This initialises your new project, and we’ll do all our analysis in this project. Use the command <code>getwd()</code> to find out the file path of this directory. You should see something similar to <code>C:/Users/your_name/Documents/AFL_Scripts</code>.</p>
+</div>
+<div id="scripts" class="section level2">
+<h2>Scripts</h2>
+<p>Scripts are an easy way to store commands that you want to come back to later, and all of our data analysis will be written in scripts. To create a new script:</p>
+<ol style="list-style-type: decimal">
+<li>File (top left)</li>
+<li>New File</li>
+<li>R Script</li>
+</ol>
+<p>Writing commands in the script and pressing enter will not execute the command, but will take you to a newline. To execute a line, use <code>Ctrl</code> + <code>Enter</code>. Press <code>Ctrl</code> + <code>S</code>to save your script, and you should see it appear in the ‘Files’ tab on the left hand side.</p>
+</div>
+</div>
+<div id="lets-get-into-some-afl-analytics" class="section level1">
+<h1>Let’s get into some AFL Analytics!</h1>
+<p>In our new script, we first need to install some packages and load them into our workspace by executing the following commands.</p>
+<div id="installing-packages" class="section level2">
+<h2>Installing packages</h2>
+<pre class="r"><code>install.packages(&quot;devtools&quot;) #allows us to download from github
+install.packages(&quot;dplyr&quot;)    #data manipulation tools
+install.packages(&quot;tidyr&quot;)    #more data manipulation tools
+install.packages(&quot;snakecase&quot;)#data cleaning tool
+install.packages(&quot;hms&quot;)      #date formatting
+devtools::install_github(&quot;jimmyday12/fitzRoy&quot;) #package that loads afltables into R</code></pre>
+<p>Ingore the warning about “Rtools”, it’s a windows development tool that we won’t be using.</p>
+</div>
+<div id="loading-packages" class="section level2">
+<h2>Loading packages</h2>
+<pre class="r"><code>library(dplyr)
+library(tidyr)
+library(snakecase)
+library(fitzRoy)</code></pre>
+<p>Here’s another analogy, think of <code>install.packages</code> as a light bulb and <code>library</code> as a switch. You only need to install a package once (unless you update R), and can use the <code>library</code> function to turn them on when needed.</p>
+<p>Side note using a hash (<code>#</code>) is a programming technique called commenting. Anything after a <code>#</code> will not be run and it allows the programmer to add notes, like what a certain line or function does.</p>
+</div>
+</div>
+<div id="loading-in-afl-data" class="section level1">
+<h1>Loading in AFL data</h1>
+<p>Now that we have everything set up, we can dive right in to the stats. We are going to load in data from <a href="https://afltables.com/afl/afl_index.html" target="blank">afltables.com</a> using <a href="https://github.com/jimmyday12/fitzRoy" target="blank">fitzRoy</a>, an R package put together by <a href="https://twitter.com/jamesday87" target="blank">James Day</a> that contains most of the match data in a consistent structure.</p>
+<p>Lets load in all the data from the year 2000 onwards and assign it to a variable.</p>
+<pre class="r"><code>afltables &lt;- get_afltables_stats(start_date = &#39;2000-01-01&#39;)</code></pre>
+<pre><code>## Returning data from 2000-01-01 to 2020-07-16</code></pre>
+<pre><code>## Downloading data</code></pre>
+<pre><code>## 
+## Finished downloading data. Processing XMLs</code></pre>
+<pre><code>## Finished getting afltables data</code></pre>
+<pre class="r"><code># afltables &lt;- get_afltables_stats() will pull in all the data from 1897</code></pre>
+<p>Now that the data is loaded into our workspace, you can see in the ‘Environment’ tab that we have 172 thousand rows (observations) and 59 columns (variables). We can confirm this with the <code>dim</code> (short for dimensions) function. Loading in the data from 1897 will have over 600k rows.</p>
+<pre class="r"><code>dim(afltables) #rows by columns</code></pre>
+<pre><code>## [1] 173492     59</code></pre>
+<p>Lets use the head command, which shows the top 6 or so rows of our dataset.</p>
+<pre class="r"><code>head(afltables)</code></pre>
+<pre><code>## # A tibble: 6 x 59
+##   Season Round Date       Local.start.time Venue Attendance Home.team  HQ1G
+##    &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;                &lt;int&gt; &lt;chr&gt;      &lt;dbl&gt; &lt;chr&gt;     &lt;int&gt;
+## 1   2000 1     2000-03-11             1450 Foot~      37222 Adelaide      3
+## 2   2000 1     2000-03-11             1450 Foot~      37222 Adelaide      3
+## 3   2000 1     2000-03-11             1450 Foot~      37222 Adelaide      3
+## 4   2000 1     2000-03-11             1450 Foot~      37222 Adelaide      3
+## 5   2000 1     2000-03-11             1450 Foot~      37222 Adelaide      3
+## 6   2000 1     2000-03-11             1450 Foot~      37222 Adelaide      3
+## # ... with 51 more variables: HQ1B &lt;int&gt;, HQ2G &lt;int&gt;, HQ2B &lt;int&gt;, HQ3G &lt;int&gt;,
+## #   HQ3B &lt;int&gt;, HQ4G &lt;int&gt;, HQ4B &lt;int&gt;, Home.score &lt;int&gt;, Away.team &lt;chr&gt;,
+## #   AQ1G &lt;int&gt;, AQ1B &lt;int&gt;, AQ2G &lt;int&gt;, AQ2B &lt;int&gt;, AQ3G &lt;int&gt;, AQ3B &lt;int&gt;,
+## #   AQ4G &lt;int&gt;, AQ4B &lt;int&gt;, Away.score &lt;int&gt;, First.name &lt;chr&gt;, Surname &lt;chr&gt;,
+## #   ID &lt;dbl&gt;, Jumper.No. &lt;dbl&gt;, Playing.for &lt;chr&gt;, Kicks &lt;dbl&gt;, Marks &lt;dbl&gt;,
+## #   Handballs &lt;dbl&gt;, Goals &lt;dbl&gt;, Behinds &lt;dbl&gt;, Hit.Outs &lt;dbl&gt;, Tackles &lt;dbl&gt;,
+## #   Rebounds &lt;dbl&gt;, Inside.50s &lt;dbl&gt;, Clearances &lt;dbl&gt;, Clangers &lt;dbl&gt;,
+## #   Frees.For &lt;dbl&gt;, Frees.Against &lt;dbl&gt;, Brownlow.Votes &lt;dbl&gt;,
+## #   Contested.Possessions &lt;dbl&gt;, Uncontested.Possessions &lt;dbl&gt;,
+## #   Contested.Marks &lt;dbl&gt;, Marks.Inside.50 &lt;dbl&gt;, One.Percenters &lt;dbl&gt;,
+## #   Bounces &lt;dbl&gt;, Goal.Assists &lt;dbl&gt;, Time.on.Ground.. &lt;dbl&gt;,
+## #   Substitute &lt;int&gt;, Umpire.1 &lt;chr&gt;, Umpire.2 &lt;chr&gt;, Umpire.3 &lt;chr&gt;,
+## #   Umpire.4 &lt;chr&gt;, group_id &lt;int&gt;</code></pre>
+<p>And use the command <code>names</code> to check the column names, to help get a sense of what this data holds.</p>
+<pre class="r"><code>names(afltables)</code></pre>
+<pre><code>##  [1] &quot;Season&quot;                  &quot;Round&quot;                  
+##  [3] &quot;Date&quot;                    &quot;Local.start.time&quot;       
+##  [5] &quot;Venue&quot;                   &quot;Attendance&quot;             
+##  [7] &quot;Home.team&quot;               &quot;HQ1G&quot;                   
+##  [9] &quot;HQ1B&quot;                    &quot;HQ2G&quot;                   
+## [11] &quot;HQ2B&quot;                    &quot;HQ3G&quot;                   
+## [13] &quot;HQ3B&quot;                    &quot;HQ4G&quot;                   
+## [15] &quot;HQ4B&quot;                    &quot;Home.score&quot;             
+## [17] &quot;Away.team&quot;               &quot;AQ1G&quot;                   
+## [19] &quot;AQ1B&quot;                    &quot;AQ2G&quot;                   
+## [21] &quot;AQ2B&quot;                    &quot;AQ3G&quot;                   
+## [23] &quot;AQ3B&quot;                    &quot;AQ4G&quot;                   
+## [25] &quot;AQ4B&quot;                    &quot;Away.score&quot;             
+## [27] &quot;First.name&quot;              &quot;Surname&quot;                
+## [29] &quot;ID&quot;                      &quot;Jumper.No.&quot;             
+## [31] &quot;Playing.for&quot;             &quot;Kicks&quot;                  
+## [33] &quot;Marks&quot;                   &quot;Handballs&quot;              
+## [35] &quot;Goals&quot;                   &quot;Behinds&quot;                
+## [37] &quot;Hit.Outs&quot;                &quot;Tackles&quot;                
+## [39] &quot;Rebounds&quot;                &quot;Inside.50s&quot;             
+## [41] &quot;Clearances&quot;              &quot;Clangers&quot;               
+## [43] &quot;Frees.For&quot;               &quot;Frees.Against&quot;          
+## [45] &quot;Brownlow.Votes&quot;          &quot;Contested.Possessions&quot;  
+## [47] &quot;Uncontested.Possessions&quot; &quot;Contested.Marks&quot;        
+## [49] &quot;Marks.Inside.50&quot;         &quot;One.Percenters&quot;         
+## [51] &quot;Bounces&quot;                 &quot;Goal.Assists&quot;           
+## [53] &quot;Time.on.Ground..&quot;        &quot;Substitute&quot;             
+## [55] &quot;Umpire.1&quot;                &quot;Umpire.2&quot;               
+## [57] &quot;Umpire.3&quot;                &quot;Umpire.4&quot;               
+## [59] &quot;group_id&quot;</code></pre>
+<p>This next step I like to include cleans up some of the naming used, makes it more consistent format that is less likely to break a function later down the line.</p>
+<pre class="r"><code>#rename all the columns to a snakecase format
+names(afltables) &lt;- to_snake_case(names(afltables))
+names(afltables) # now the column headers are in lowercase and have dots replaced with underscores</code></pre>
+<pre><code>##  [1] &quot;season&quot;                  &quot;round&quot;                  
+##  [3] &quot;date&quot;                    &quot;local_start_time&quot;       
+##  [5] &quot;venue&quot;                   &quot;attendance&quot;             
+##  [7] &quot;home_team&quot;               &quot;hq_1_g&quot;                 
+##  [9] &quot;hq_1_b&quot;                  &quot;hq_2_g&quot;                 
+## [11] &quot;hq_2_b&quot;                  &quot;hq_3_g&quot;                 
+## [13] &quot;hq_3_b&quot;                  &quot;hq_4_g&quot;                 
+## [15] &quot;hq_4_b&quot;                  &quot;home_score&quot;             
+## [17] &quot;away_team&quot;               &quot;aq_1_g&quot;                 
+## [19] &quot;aq_1_b&quot;                  &quot;aq_2_g&quot;                 
+## [21] &quot;aq_2_b&quot;                  &quot;aq_3_g&quot;                 
+## [23] &quot;aq_3_b&quot;                  &quot;aq_4_g&quot;                 
+## [25] &quot;aq_4_b&quot;                  &quot;away_score&quot;             
+## [27] &quot;first_name&quot;              &quot;surname&quot;                
+## [29] &quot;id&quot;                      &quot;jumper_no&quot;              
+## [31] &quot;playing_for&quot;             &quot;kicks&quot;                  
+## [33] &quot;marks&quot;                   &quot;handballs&quot;              
+## [35] &quot;goals&quot;                   &quot;behinds&quot;                
+## [37] &quot;hit_outs&quot;                &quot;tackles&quot;                
+## [39] &quot;rebounds&quot;                &quot;inside_50_s&quot;            
+## [41] &quot;clearances&quot;              &quot;clangers&quot;               
+## [43] &quot;frees_for&quot;               &quot;frees_against&quot;          
+## [45] &quot;brownlow_votes&quot;          &quot;contested_possessions&quot;  
+## [47] &quot;uncontested_possessions&quot; &quot;contested_marks&quot;        
+## [49] &quot;marks_inside_50&quot;         &quot;one_percenters&quot;         
+## [51] &quot;bounces&quot;                 &quot;goal_assists&quot;           
+## [53] &quot;time_on_ground&quot;          &quot;substitute&quot;             
+## [55] &quot;umpire_1&quot;                &quot;umpire_2&quot;               
+## [57] &quot;umpire_3&quot;                &quot;umpire_4&quot;               
+## [59] &quot;group_id&quot;</code></pre>
+</div>
+<div id="useless-afl-stat" class="section level1">
+<h1>Useless AFL Stat</h1>
+<p>Lets work towards two stats:</p>
+<blockquote>
+<p>Who has the highest disposal tally equal to their jumper number?</p>
+</blockquote>
+<p>and:</p>
+<blockquote>
+<p>Which season has the highest accuracy?</p>
+</blockquote>
+<div id="selecting-columns" class="section level2">
+<h2>Selecting columns</h2>
+<p>Now that the data is loaded and in a format we can easily manipulate, lets take a look at some basic functions. <code>dplyr</code> has built in functions to make this process as painless as possible. Firstly, lets look at <code>select</code>, and function that keeps the columns we want to investigate. Also we are going to be making use of <code>%&gt;%</code>, known as a pipe, to channel our data through various functions. A shortcut for the command is <code>Ctrl</code> + <code>Shift</code> + <code>m</code>.</p>
+<pre class="r"><code>afltables %&gt;% 
+  select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs)</code></pre>
+<pre><code>## # A tibble: 173,492 x 9
+##    season round date          id first_name surname jumper_no kicks handballs
+##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1   2000 1     2000-03-11    12 Mark       Bickley        26    16         3
+##  2   2000 1     2000-03-11    68 Brett      Burton         24     8         2
+##  3   2000 1     2000-03-11    77 James      Byrne           6     5         1
+##  4   2000 1     2000-03-11    78 Matthew    Clarke          4     1         3
+##  5   2000 1     2000-03-11    79 Andrew     Crowell         1     4         4
+##  6   2000 1     2000-03-11    61 Andrew     Eccles         33    10         7
+##  7   2000 1     2000-03-11    34 Tyson      Edwards         9    17         4
+##  8   2000 1     2000-03-11    35 Shane      Ellen          13    10         2
+##  9   2000 1     2000-03-11    51 Simon      Goodwin        36    10         8
+## 10   2000 1     2000-03-11    22 Ben        Hart           34     7         2
+## # ... with 173,482 more rows</code></pre>
+</div>
+<div id="combining-mutating-columns" class="section level2">
+<h2>Combining (mutating) columns</h2>
+<p>Nice, now we’ve got the data want to investigate we can use a technique using a function called <code>mutate</code>. Whats interesting is this data source doesn’t have a disposals count column, but we can easily recreate it by adding handballs to kicks with one line of code.</p>
+<pre class="r"><code>afltables %&gt;% 
+  select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs) %&gt;% 
+  mutate(disposals = kicks + handballs) #name of our new column goes on the left hand side</code></pre>
+<pre><code>## # A tibble: 173,492 x 10
+##    season round date          id first_name surname jumper_no kicks handballs
+##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1   2000 1     2000-03-11    12 Mark       Bickley        26    16         3
+##  2   2000 1     2000-03-11    68 Brett      Burton         24     8         2
+##  3   2000 1     2000-03-11    77 James      Byrne           6     5         1
+##  4   2000 1     2000-03-11    78 Matthew    Clarke          4     1         3
+##  5   2000 1     2000-03-11    79 Andrew     Crowell         1     4         4
+##  6   2000 1     2000-03-11    61 Andrew     Eccles         33    10         7
+##  7   2000 1     2000-03-11    34 Tyson      Edwards         9    17         4
+##  8   2000 1     2000-03-11    35 Shane      Ellen          13    10         2
+##  9   2000 1     2000-03-11    51 Simon      Goodwin        36    10         8
+## 10   2000 1     2000-03-11    22 Ben        Hart           34     7         2
+## # ... with 173,482 more rows, and 1 more variable: disposals &lt;dbl&gt;</code></pre>
+</div>
+<div id="filtering-our-data" class="section level2">
+<h2>Filtering our data</h2>
+<p>A staple of Useless AFL Stats is the use of the jumper number, mainly because its arbitrary and should have no effect on the game, but nonetheless makes for a great stat. Lets find all the times the disposal count was equal to the jumper number. We can achieve this by using the <code>filter</code> function.</p>
+<pre class="r"><code>afltables %&gt;% 
+  select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs) %&gt;% 
+  mutate(disposals = kicks + handballs) %&gt;% 
+  filter(disposals == jumper_no)</code></pre>
+<pre><code>## # A tibble: 3,680 x 10
+##    season round date          id first_name surname jumper_no kicks handballs
+##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1   2000 1     2000-03-11    77 James      Byrne           6     5         1
+##  2   2000 1     2000-03-11    78 Matthew    Clarke          4     1         3
+##  3   2000 1     2000-03-11   436 Luke       Darcy          14    11         3
+##  4   2000 3     2000-03-25     4 Mark       Ricciu~        32    15        17
+##  5   2000 3     2000-03-25   558 Tim        McGrath        17     9         8
+##  6   2000 7     2000-04-23    12 Mark       Bickley        26    15        11
+##  7   2000 8     2000-04-29    80 Scott      Welsh          17    13         4
+##  8   2000 9     2000-05-06    56 Nathan     Bassett         8     6         2
+##  9   2000 9     2000-05-06   777 Glenn      Archer         11     8         3
+## 10   2000 11    2000-05-21    79 Andrew     Crowell         1     0         1
+## # ... with 3,670 more rows, and 1 more variable: disposals &lt;dbl&gt;</code></pre>
+</div>
+<div id="arranging-by-a-column" class="section level2">
+<h2>Arranging by a column</h2>
+<p>Ok, so we have all the occurrences when jumper no. was equal to disposals, what was the largest? We can use the <code>arrange</code> function on a column to sort by ascending or descending order. The default arrangement for a columns is ascending (smallest at the top to biggest), so we’ll wrap the column in <code>desc()</code> to get the descending order.</p>
+<pre class="r"><code>afltables %&gt;% 
+  select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs) %&gt;% 
+  mutate(disposals = kicks + handballs) %&gt;% 
+  filter(disposals == jumper_no) %&gt;% 
+  arrange(desc(jumper_no))</code></pre>
+<pre><code>## # A tibble: 3,680 x 10
+##    season round date          id first_name surname jumper_no kicks handballs
+##     &lt;dbl&gt; &lt;chr&gt; &lt;date&gt;     &lt;dbl&gt; &lt;chr&gt;      &lt;chr&gt;       &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt;
+##  1   2016 18    2016-07-24 11787 Tom        Rockli~        38    24        14
+##  2   2016 13    2016-06-18 11787 Tom        Rockli~        38    15        23
+##  3   2006 2     2006-04-09    51 Simon      Goodwin        36    21        15
+##  4   2010 13    2010-06-27    51 Simon      Goodwin        36    17        19
+##  5   2003 4     2003-04-20   842 Nick       Stevens        36    22        14
+##  6   2008 10    2008-05-31  1460 Dane       Swan           36    19        17
+##  7   2009 9     2009-05-23  1460 Dane       Swan           36    21        15
+##  8   2009 18    2009-08-01  1460 Dane       Swan           36    19        17
+##  9   2010 16    2010-07-17  1460 Dane       Swan           36    21        15
+## 10   2012 4     2012-04-21  1460 Dane       Swan           36    18        18
+## # ... with 3,670 more rows, and 1 more variable: disposals &lt;dbl&gt;</code></pre>
+<p>And there we have it, your first useless AFL stat. You should see Tom Rockliff up the top with 2 games of 38 disposals wearing the number 38. Useless.</p>
+</div>
+<div id="group-by-and-summarise" class="section level2">
+<h2>Group by and Summarise</h2>
+<p>Grouping is a powerful tool we use to group certain values in columns. An example of this would be season, where each year is essentially its own category, and we can run commands that (for example) take the average amount of goals per season. Lets put this into practice with a simple example based off data we already have answering the following question:</p>
+<blockquote>
+<p>Which season has the highest accuracy?</p>
+</blockquote>
+<p>Lets pull in the data we need to create this stat. We need to sum the total goals and behinds per season.</p>
+<pre class="r"><code>afltables %&gt;% 
+  select(season, goals, behinds) %&gt;% 
+  group_by(season) %&gt;% 
+  summarise(
+    sum_g = sum(goals),
+    sum_b = sum(behinds),
+    .groups = &#39;drop&#39;
+  )</code></pre>
+<pre><code>## # A tibble: 21 x 3
+##    season sum_g sum_b
+##     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;
+##  1   2000  5626  3705
+##  2   2001  5258  3586
+##  3   2002  5121  3563
+##  4   2003  5101  3546
+##  5   2004  5012  3504
+##  6   2005  5118  3439
+##  7   2006  4959  3535
+##  8   2007  5107  3581
+##  9   2008  5238  3482
+## 10   2009  4913  3515
+## # ... with 11 more rows</code></pre>
+<p>Now that we have the total counts per season, we can use <code>mutate</code> to calculate accuracy, which is <span class="math inline">\(\dfrac{Goals}{Shots}\)</span>. We are also going to arrange the result to see which season has the highest accuracy.</p>
+<pre class="r"><code>afltables %&gt;% 
+  select(season, goals, behinds) %&gt;% 
+  group_by(season) %&gt;% 
+  summarise(
+    sum_g = sum(goals),
+    sum_b = sum(behinds),
+    .groups = &#39;drop&#39;  #we also need to drop the grouping after running the command
+  ) %&gt;% 
+  mutate(
+    accuracy = sum_g/(sum_g+sum_b)*100
+  ) %&gt;% 
+  arrange(desc(accuracy))</code></pre>
+<pre><code>## # A tibble: 21 x 4
+##    season sum_g sum_b accuracy
+##     &lt;dbl&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+##  1   2000  5626  3705     60.3
+##  2   2008  5238  3482     60.1
+##  3   2005  5118  3439     59.8
+##  4   2001  5258  3586     59.5
+##  5   2015  5176  3536     59.4
+##  6   2003  5101  3546     59.0
+##  7   2002  5121  3563     59.0
+##  8   2004  5012  3504     58.9
+##  9   2007  5107  3581     58.8
+## 10   2013  5561  3907     58.7
+## # ... with 11 more rows</code></pre>
+<p>Nice, we can see that the year 2000 has the highest accuracy. Another question we might ask is which round in each season has the highest accuracy? We can group by a second variable, round.</p>
+<pre class="r"><code>afltables %&gt;% 
+  select(season, round, goals, behinds) %&gt;% 
+  group_by(season, round) %&gt;% 
+  summarise(
+    sum_g = sum(goals),
+    sum_b = sum(behinds),
+    .groups = &#39;drop&#39;  #we also need to drop the grouping after running the command
+  ) %&gt;% 
+  mutate(
+    accuracy = sum_g/(sum_g+sum_b)*100
+  ) %&gt;% 
+  arrange(desc(accuracy))</code></pre>
+<pre><code>## # A tibble: 556 x 5
+##    season round sum_g sum_b accuracy
+##     &lt;dbl&gt; &lt;chr&gt; &lt;dbl&gt; &lt;dbl&gt;    &lt;dbl&gt;
+##  1   2005 EF       64    28     69.6
+##  2   2011 SF       62    28     68.9
+##  3   2004 QF       60    29     67.4
+##  4   2014 GF       32    16     66.7
+##  5   2017 SF       48    24     66.7
+##  6   2000 QF       69    35     66.3
+##  7   2015 12      175    89     66.3
+##  8   2008 EF       61    32     65.6
+##  9   2005 PF       49    26     65.3
+## 10   2007 16      250   135     64.9
+## # ... with 546 more rows</code></pre>
+<p>Nice, 2005 Elimination finals games were at nearly 70% kicking accuracy. <code>group_by</code> and <code>summarise</code> work really well together, and you can switch out <code>sum</code> with <code>mean</code> for the average, or <code>max</code> and <code>min</code> for the maximum and minimum in each group. The possibilities are endless.</p>
+</div>
+</div>
+<div id="conclusion" class="section level1">
+<h1>Conclusion</h1>
+<p>Thanks for making it this far, hopefully its given you a taste of the potential insights (useful or useless) that R and AFL have to offer. This is hopefully the first in a series of tutorials about AFL analytics in R. You can contact us on twitter or Facebook, let us know what you found interesting, insightful, difficult, any other types of stats you’d like to see recreated in upcoming posts.</p>
+</div>

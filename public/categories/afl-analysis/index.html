@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <title>AFL Analysis &middot; Crow Data Science</title>
+    <meta name="generator" content="Hugo 0.73.0" />
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+    <meta name="author" content="Liam Crowhurst">
+    
+      <meta name="description" content="A blog about statistics, programming and AFL">
+    
+    
+      <link href="/categories/afl-analysis/index.xml" rel="alternate" type="application/rss+xml" title="Crow Data Science" />
+      <link href="/categories/afl-analysis/index.xml" rel="feed" type="application/rss+xml" title="Crow Data Science" />
+    
+    <link rel="canonical" href="/categories/afl-analysis/"/>
+    <link rel="icon" href="/favicon.ico">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png"/>
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/font-awesome.min.css">
+    <link rel="stylesheet" href="/css/monokai.css">
+    <link rel="stylesheet" href="/fancybox/jquery.fancybox.css">
+    
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400italic,400,600' rel='stylesheet' type='text/css'>
+    <link href='https://fonts.googleapis.com/css?family=Source+Code+Pro' rel='stylesheet' type='text/css'>
+    <meta property="og:title" content="AFL Analysis" />
+<meta property="og:description" content="" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content="/categories/afl-analysis/" />
+<meta property="og:updated_time" content="2020-07-16T00:00:00+00:00" />
+
+    
+    <meta itemprop="name" content="AFL Analysis">
+<meta itemprop="description" content="">
+    <meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="AFL Analysis"/>
+<meta name="twitter:description" content=""/>
+<meta name="twitter:site" content="@crow_data_sci"/>
+
+    
+
+    
+
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+</head>
+<body>
+<div class="container">
+
+
+<div id="container">
+	<header id="header">
+  <div id="header-main" class="header-inner">
+    <div class="outer">
+      <a href="/" id="logo">
+          
+          <i class="logo" style="background-image: url('/css/images/logo.png')"></i>
+          
+          <span class="site-title">Crow Data Science</span>
+      </a>
+      <nav id="main-nav">
+          
+          
+          <a class="main-nav-link" href="/">Home</a>
+          
+          
+          
+          
+          
+          
+
+          
+
+          
+          
+          
+          
+          <a class="main-nav-link" href="/tags/">Tags</a>
+          
+          
+          
+          <a class="main-nav-link" href="/categories/">Categories</a>
+          
+          
+      </nav>
+        <nav id="sub-nav">
+          <div class="profile" id="profile-nav">
+            <a id="profile-anchor" href="javascript:;"><img class="avatar" src="/css/images/logo.png"><i class="fa fa-caret-down"></i></a>
+          </div>
+        </nav>
+        <div id="search-form-wrap">
+          <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form">
+              <input type="search" name="q" class="search-form-input" placeholder="Search">
+              <button type="submit" class="search-form-submit">
+              </button>
+              <input type="hidden" name="sitesearch" value="/" />
+         </form>
+        </div>
+    </div>
+  </div>
+  <div id="main-nav-mobile" class="header-sub header-inner">
+    <table class="menu outer">
+      <tbody>
+          <tr>
+          
+          
+          <td><a class="main-nav-link" href="/">Home</a></td>
+          
+          
+          
+          
+          
+          
+
+          
+
+          
+          
+          
+          
+          <td><a class="main-nav-link" href="/tags/">Tags</a></td>
+          
+          
+          
+          <td><a class="main-nav-link" href="/categories/">Categories</a></td>
+          
+          
+          <td>
+          <form action="//google.com/search" method="get" accept-charset="UTF-8" class="search-form">
+          <input type="search" name="q" class="search-form-input" placeholder="Search">
+          <input type="hidden" name="sitesearch" value="/" />
+          </form>
+        </td>
+      </tr>
+      </tbody>
+    </table>
+  </div>
+</header>
+
+   	
+   	<div class="outer">
+   	
+    	<aside id="profile">
+  <div class="inner profile-inner">
+    <div class="base-info profile-block">
+      
+      <img id="avatar" src="/css/images/logo.png">
+      
+      <h2 id="name">Liam Crowhurst</h2>
+      <h3 id="title">Data Scientist</h3>
+      <span id="location"><i class="fa fa-map-marker"></i>Brisbane, QLD, AUS</span>
+      
+          <a id="follow" href="https://twitter.com/crow_data_sci">
+              Follow
+          </a>
+      
+    </div>
+    <div class="article-info profile-block">
+      <div class="article-info-block">
+        3
+        <span>Posts</span>
+      </div>
+      <div class="article-info-block">
+        
+          4
+        
+        <span>
+            Tags
+        </span>
+      </div>
+    </div>
+    <div class="profile-block social-links">
+      <table>
+        <tr>
+          
+<td><a href="//github.com/liam-crow" target="_blank" title="GitHub"><i class="fa fa-github"></i></a></td>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<td><a href="//linkedin.com/in/liam-crowhurst-3aaa56121" target="_blank" title="LinkedIn"><i class="fa fa-linkedin"></i></a></td>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<td><a href="//facebook.com/uselessaflstats" target="_blank" title="Facebook"><i class="fa fa-facebook"></i></a></td>
+
+
+
+<td><a href="//twitter.com/crow_data_sci" target="_blank" title="Twitter"><i class="fa fa-twitter"></i></a></td>
+
+
+          <td><a href="/index.xml" target="_blank" title="RSS"><i class="fa fa-rss"></i></a></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</aside>
+
+    
+
+    <section id="main">
+    
+    
+    
+    
+    <section class="archives-wrap">
+        <div class="archive-category-wrap">
+            <span class="archive-category">AFL Analysis</span>
+        </div>
+        <div class="archives">
+            
+            
+                <article class="archive-article archive-type-post">
+    <div class="archive-article-inner">
+        <div class="archive-article-thumbnail">
+            
+            <a href="/2020/07/16/afl-brownlow-medal-votes-data-analysis-r/" class="thumbnail">
+                <span style="background-image:url(/)" alt="The Problems with Predicting the Brownlow Medal" class="thumbnail-image"></span>
+            </a>
+            
+        </div>
+        <header class="archive-article-header">
+            <h1 itemprop="name">
+            <a class="archive-article-title" href="/2020/07/16/afl-brownlow-medal-votes-data-analysis-r/">The Problems with Predicting the Brownlow Medal</a>
+            </h1>
+            <div class="archive-article-date">
+                <i class="fa fa-calendar"></i>
+                <time datetime="2020-07-16 00:00:00 &#43;0000 UTC" itemprop="datePublished">2020-07-16</time>
+            </div>
+        </header>
+    </div>
+</article>
+ 
+            
+        </div>
+    </section>
+    <nav id="page-nav">
+
+</nav>
+
+    
+
+    </section>
+
+   	
+    	<aside id="sidebar">
+    
+<div class="widget-wrap">
+    <h3 class="widget-title">
+        Recents
+    </h3>
+    <div class="widget">
+      <ul id="recent-post">
+            
+            <li>
+                <div class="item-thumbnail">
+                    <a href="/2020/07/16/afl-brownlow-medal-votes-data-analysis-r/" class="thumbnail">
+                    
+                        <span class="thumbnail-image thumbnail-none"></span>
+                    
+                    </a>
+                </div>
+                <div class="item-inner">
+                    
+                    
+                    <p class="item-category">
+                        
+                        <a class="article-category-link" href="/categories/afl-analysis">
+                        AFL Analysis
+                        </a>
+                    </p>
+                    
+                    
+                    <p class="item-title"><a href="/2020/07/16/afl-brownlow-medal-votes-data-analysis-r/" class="title">The Problems with Predicting the Brownlow Medal</a></p>
+                    <p class="item-date">
+                        <time datetime="2020-07-16 00:00:00 &#43;0000 UTC" itemprop="datePublished">2020-07-16</time>
+                    </p>
+                </div>
+            </li>
+            
+            <li>
+                <div class="item-thumbnail">
+                    <a href="/2020/07/16/introduction-afl-analytics-data-r/" class="thumbnail">
+                    
+                        <span class="thumbnail-image thumbnail-none"></span>
+                    
+                    </a>
+                </div>
+                <div class="item-inner">
+                    
+                    
+                    <p class="item-category">
+                        
+                        <a class="article-category-link" href="/categories/afl-data-tutorial">
+                        AFL Data Tutorial
+                        </a>
+                    </p>
+                    
+                    
+                    <p class="item-title"><a href="/2020/07/16/introduction-afl-analytics-data-r/" class="title">Introduction to AFL Analytics with Useless AFL Stats</a></p>
+                    <p class="item-date">
+                        <time datetime="2020-07-16 00:00:00 &#43;0000 UTC" itemprop="datePublished">2020-07-16</time>
+                    </p>
+                </div>
+            </li>
+            
+            <li>
+                <div class="item-thumbnail">
+                    <a href="/about/" class="thumbnail">
+                    
+                        <span class="thumbnail-image thumbnail-none"></span>
+                    
+                    </a>
+                </div>
+                <div class="item-inner">
+                    
+                    <p class="item-title"><a href="/about/" class="title">About</a></p>
+                    <p class="item-date">
+                        <time datetime="2020-01-01 00:00:00 &#43;0000 UTC" itemprop="datePublished">2020-01-01</time>
+                    </p>
+                </div>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+
+    
+
+
+<div class="widget-wrap">
+    <h3 class="widget-title">Categories</h3>
+    <div class="widget">
+        <ul class="category-list">
+            
+            <li class="category-list-item">
+                
+                <a class="category-list-link" href="/categories/afl-analysis">
+                    afl-analysis
+                </a>
+                <span class="category-list-count">1</span>
+            </li>
+            
+            <li class="category-list-item">
+                
+                <a class="category-list-link" href="/categories/afl-data-tutorial">
+                    afl-data-tutorial
+                </a>
+                <span class="category-list-count">1</span>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+
+
+
+    
+
+
+<div class="widget-wrap">
+    <h3 class="widget-title">
+        Tags
+    </h3>
+    <div class="widget">
+        <ul class="category-list">
+            
+            <li class="category-list-item">
+                
+                <a class="category-list-link" href="/tags/introduction-to-r">
+                    introduction-to-r
+                </a>
+                <span class="category-list-count">1</span>
+            </li>
+            
+            <li class="category-list-item">
+                
+                <a class="category-list-link" href="/tags/r">
+                    r
+                </a>
+                <span class="category-list-count">2</span>
+            </li>
+            
+            <li class="category-list-item">
+                
+                <a class="category-list-link" href="/tags/useful-afl-stats">
+                    useful-afl-stats
+                </a>
+                <span class="category-list-count">1</span>
+            </li>
+            
+            <li class="category-list-item">
+                
+                <a class="category-list-link" href="/tags/useless-afl-stats">
+                    useless-afl-stats
+                </a>
+                <span class="category-list-count">1</span>
+            </li>
+            
+        </ul>
+    </div>
+</div>
+
+
+
+
+    
+
+
+<div class="widget-wrap">
+    <h3 class="widget-title">
+        Tag cloud
+    </h3>
+    <div class="widget tagcloud">
+        
+        
+        <a href="/tags/introduction-to-r" style="font-size: 12px;">introduction-to-r</a>
+        
+        
+        <a href="/tags/r" style="font-size: 12px;">r</a>
+        
+        
+        <a href="/tags/useful-afl-stats" style="font-size: 12px;">useful-afl-stats</a>
+        
+        
+        <a href="/tags/useless-afl-stats" style="font-size: 12px;">useless-afl-stats</a>
+        
+    </div>
+</div>
+
+
+
+
+
+    <div id="toTop" class="fa fa-angle-up"></div>
+</aside>
+
+    
+	</div>
+</div>
+
+<footer id="footer">
+  <div class="outer">
+    <div id="footer-info" class="inner">
+      &copy; 2020
+      Powered by <a href="//gohugo.io">Hugo</a>. Theme by <a href="https://github.com/ppoffice">PPOffice</a>.
+    </div>
+  </div>
+</footer>
+
+
+<script src="/fancybox/jquery.fancybox.pack.js"></script>
+<script src="/js/script.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.9.0/highlight.min.js"></script>
+
+
+<script>hljs.initHighlightingOnLoad();</script>
+
+
+<script type="text/x-mathjax-config">
+MathJax.Hub.Config({
+  tex2jax: {
+    inlineMath: [['$','$'], ['\\(','\\)']]}
+  });
+</script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+
+
+
+
+</body>
+</html>
