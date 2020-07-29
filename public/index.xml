@@ -12,30 +12,23 @@
     
     
     <item>
-      <title>Introduction to AFL Analytics with Useless AFL Stats</title>
-      <link>/2020/07/16/introduction-afl-analytics-data-r/</link>
-      <pubDate>Thu, 16 Jul 2020 00:00:00 +0000</pubDate>
-      
-<<<<<<< HEAD
-      <guid>/about/</guid>
-      <description>Who am I? My name is Liam, and I&amp;rsquo;m a Data scientist. I currently work in financial research, and have a keen interest in R, open source data and football (AFL).
-What will I post about? I don&amp;rsquo;t know, mainly footy related, a bit of government and council data. Whatever takes my interest, I guess.
-What theme is this? The theme was downloaded from @jrutheiser/hugo-lithium-theme and modified by Yihui Xie.</description>
-=======
-      <guid>/2020/07/16/introduction-afl-analytics-data-r/</guid>
-      <description>I’m co-admin of a little page on Facebook that caters to a niche audience of AFL statistics nerds known as Useless AFL Stats, where (founder and co-admin) Aaron and I discover stats that have no relevance to anything at all, and will never be useful to anyone, ever. And that got me thinking, why should I have all the fun finding these nuggets of gold?
-I’m a firm believer in open source programming and data, the idea that as much data should be made publicly available as possible to the largest possible audience.</description>
-    </item>
-    
-    <item>
-      <title>The Problems with Predicting the Brownlow Medal</title>
+      <title>A new way of interpreting Brownlow Medal data</title>
       <link>/2020/07/16/afl-brownlow-medal-votes-data-analysis-r/</link>
       <pubDate>Thu, 16 Jul 2020 00:00:00 +0000</pubDate>
       
       <guid>/2020/07/16/afl-brownlow-medal-votes-data-analysis-r/</guid>
       <description>IntroductionThe Brownlow medal, one of the most prestigious AFL awards, is notoriously difficult to predict. You can read this article from Fat Stats for a great look as to why. Here’s a quick summary:
 Umpires are human and have their own biasesHighly predictive stats from last year may not be predictive this yearMedia influence may impact umpires when they voteAnother point that I’d like to throw into the mix:</description>
->>>>>>> b150e20af901d2ba660d9b1566334af08ea8e0dd
+    </item>
+    
+    <item>
+      <title>Introduction to AFL Analytics with Useless AFL Stats</title>
+      <link>/2020/07/16/introduction-afl-analytics-data-r/</link>
+      <pubDate>Thu, 16 Jul 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/07/16/introduction-afl-analytics-data-r/</guid>
+      <description>I’m co-admin of a little page on Facebook that caters to a niche audience of AFL statistics nerds known as Useless AFL Stats, where (founder and co-admin) Aaron and I discover stats that have no relevance to anything at all, and will never be useful to anyone, ever. And that got me thinking, why should I have all the fun finding these nuggets of gold?
+I’m a firm believer in open source programming and data, the idea that as much data should be made publicly available as possible to the largest possible audience.</description>
     </item>
     
     <item>
@@ -43,15 +36,10 @@ I’m a firm believer in open source programming and data, the idea that as much
       <link>/about/</link>
       <pubDate>Wed, 01 Jan 2020 00:00:00 +0000</pubDate>
       
-<<<<<<< HEAD
-      <guid>/1/01/01/welcome-to-my-blog/</guid>
-      <description></description>
-=======
       <guid>/about/</guid>
       <description>Who am I? My name is Liam, and I&amp;rsquo;m a Data scientist. I currently work in financial research, and have a keen interest in R, open source data and football (AFL).
 What will I post about? I don&amp;rsquo;t know, mainly footy related, a bit of government and council data. Whatever takes my interest, I guess.
 Where does the AFL data come from? My main reference is afltables.com, and I use fitzRoy to import this data into R.</description>
->>>>>>> b150e20af901d2ba660d9b1566334af08ea8e0dd
     </item>
     
   </channel>

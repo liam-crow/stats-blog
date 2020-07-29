@@ -36,7 +36,7 @@ Ok, let get into the setup!
 
 The program that we'll be using to generate stats is [R](https://www.r-project.org/){target="blank"}, a powerful tool commonly used by professional statisticians and data scientists in academia and industry, but we'll be using it to shitpost about AFL stats.
 
-We'll be downloading R from here [https://cran.csiro.au/](https://cran.csiro.au/){target="blank"} and choose the version for your OS. I'd recommend all the default file locations and setup.
+We'll be downloading R from here [https://cloud.r-project.org/](https://cloud.r-project.org/){target="blank"} and choose the version for your OS. I'd recommend all the default file locations and setup. If you are using a MAC OS, click `R-4.0.x.pkg` which is the executable.
 
 We'll also be using RStudio, a Graphical User Interface (GUI) that allows for easier use of the R language. Download the free version here at [https://rstudio.com/products/rstudio/download/](https://rstudio.com/products/rstudio/download/){target="blank"}.
 
@@ -185,7 +185,7 @@ Now that the data is loaded and in a format we can easily manipulate, lets take 
 
 ```{r}
 afltables %>% 
-  select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs)
+  select(season, round, id, first_name, surname, jumper_no, kicks, handballs)
 ```
 
 ## Combining (mutating) columns
@@ -194,7 +194,7 @@ Nice, now we've got the data want to investigate we can use a technique using a 
 
 ```{r}
 afltables %>% 
-  select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs) %>% 
+  select(season, round, id, first_name, surname, jumper_no, kicks, handballs) %>% 
   mutate(disposals = kicks + handballs) #name of our new column goes on the left hand side
 ```
 
@@ -204,7 +204,7 @@ A staple of Useless AFL Stats is the use of the jumper number, mainly because it
 
 ```{r}
 afltables %>% 
-  select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs) %>% 
+  select(season, round, id, first_name, surname, jumper_no, kicks, handballs) %>% 
   mutate(disposals = kicks + handballs) %>% 
   filter(disposals == jumper_no)
 ```
@@ -215,7 +215,7 @@ Ok, so we have all the occurrences when jumper no. was equal to disposals, what 
 
 ```{r}
 afltables %>% 
-  select(season, round, date, id, first_name, surname, jumper_no, kicks, handballs) %>% 
+  select(season, round, id, first_name, surname, jumper_no, kicks, handballs) %>% 
   mutate(disposals = kicks + handballs) %>% 
   filter(disposals == jumper_no) %>% 
   arrange(desc(jumper_no))

@@ -14,7 +14,6 @@ theme = "hugo-icarus"
 ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 
 [permalinks]
-<<<<<<< HEAD
     post = "/:year/:month/:day/:slug/"
 
 [[menu.main]]
@@ -26,11 +25,6 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 [[menu.main]]
     name = "Twitter"
     url = "https://twitter.com/crow_data_sci"
-
-[params]
-    description = "A data science blog about AFL, R and open source data"
-=======
-    post = "/:year/:month/:day/:slug"
 
 
 [params]
@@ -77,7 +71,6 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
     before = false
     label  = "Categories"
     link   = "categories/"
->>>>>>> b150e20af901d2ba660d9b1566334af08ea8e0dd
 
 [profile]
     follow_button = "Follow"
@@ -86,11 +79,8 @@ ignoreFiles = ["\\.Rmd$", "\\.Rmarkdown$", "_files$", "_cache$"]
 [params.profile]
     follow_button = "https://twitter.com/crow_data_sci"
 
-<<<<<<< HEAD
     # path to the favicon, under "static"
     favicon = "favicon.heic"
-=======
->>>>>>> b150e20af901d2ba660d9b1566334af08ea8e0dd
 
 [social]
 # Add your social network accounts to the profile section on the left
