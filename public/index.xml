@@ -6,10 +6,20 @@
     <description>Recent content on Crow Data Science</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 16 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Fri, 31 Jul 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Useless AFL Stats Dashboard</title>
+      <link>/2020/07/31/useless-afl-stats-dashboard/</link>
+      <pubDate>Fri, 31 Jul 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/2020/07/31/useless-afl-stats-dashboard/</guid>
+      <description>#main {display: inline;float: left;width: 1200px;}Glossary:
+hq_1_g: Home Q1 Goalshq_1_b: Home Q1 Behindsaq_x_x: Awaypq_x_x: Playing foroq_x_x: Opposition</description>
+    </item>
     
     <item>
       <title>A new way of interpreting Brownlow Medal data</title>

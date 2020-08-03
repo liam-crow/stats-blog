@@ -1,0 +1,36 @@
+---
+title: Useless AFL Stats Dashboard
+author: Liam Crowhurst
+date: '2020-07-31'
+slug: useless-afl-stats-dashboard
+categories:
+  - AFL Analysis
+tags:
+  - R
+  - Useless AFL Stats
+output: html_document
+banner: ''
+description: 'An interactive dashboard to search for Useless AFL Stats'
+images: []
+menu: ''
+disable_profile: true 
+disable_widgets: true
+---
+
+```{css, echo=FALSE}
+#main {
+    display: inline;
+    float: left;
+    width: 1200px;
+}
+```
+
+<div class="container"><div class="h_iframe"><iframe  src="https://crowdatascience.shinyapps.io/2020-07-31-useless-afl-stats-dashboard/" frameborder="0" height="700px" width="1100" position="absolute"></iframe></div></div>
+
+Glossary:
+
+* `hq_1_g`: Home Q1 Goals
+* `hq_1_b`: Home Q1 Behinds
+* `aq_x_x`: Away
+* `pq_x_x`: Playing for
+* `oq_x_x`: Opposition
