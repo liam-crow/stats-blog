@@ -13,20 +13,20 @@
     
     <item>
       <title>Useless AFL Stats Dashboard</title>
-      <link>/2020/07/31/useless-afl-stats-dashboard/</link>
+      <link>/useless-afl-stats-dashboard/</link>
       <pubDate>Fri, 31 Jul 2020 00:00:00 +0000</pubDate>
       
-      <guid>/2020/07/31/useless-afl-stats-dashboard/</guid>
+      <guid>/useless-afl-stats-dashboard/</guid>
       <description>#main {display: inline;float: left;width: 1200px;}Glossary:
 hq_1_g: Home Q1 Goalshq_1_b: Home Q1 Behindsaq_x_x: Awaypq_x_x: Playing foroq_x_x: Opposition</description>
     </item>
     
     <item>
       <title>A new way of interpreting Brownlow Medal data</title>
-      <link>/2020/07/16/afl-brownlow-medal-votes-data-analysis-r/</link>
+      <link>/afl-brownlow-medal-votes-data-analysis-r/</link>
       <pubDate>Thu, 16 Jul 2020 00:00:00 +0000</pubDate>
       
-      <guid>/2020/07/16/afl-brownlow-medal-votes-data-analysis-r/</guid>
+      <guid>/afl-brownlow-medal-votes-data-analysis-r/</guid>
       <description>IntroductionThe Brownlow medal, one of the most prestigious AFL awards, is notoriously difficult to predict. You can read this article from Fat Stats for a great look as to why. Here’s a quick summary:
 Umpires are human and have their own biasesHighly predictive stats from last year may not be predictive this yearMedia influence may impact umpires when they voteAnother point that I’d like to throw into the mix:</description>
     </item>
