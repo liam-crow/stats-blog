@@ -6,10 +6,19 @@
     <description>Recent content in Posts on Crow Data Science</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Fri, 31 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 04 Aug 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/post/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Reverse Engineering Fantasy Points: Frequentist Method with Generalised Linear Models</title>
+      <link>/reverse-engineering-fantasy-points-frequentist-method-glm/</link>
+      <pubDate>Tue, 04 Aug 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/reverse-engineering-fantasy-points-frequentist-method-glm/</guid>
+      <description>Hypothetical Situation:Fantasy points (FP) are a black box algorithm: no one knows what calculations are made to generate points. It’s a closely guarded industry secret and they don’t want to release their methodology to the rest of the AFL analytics community. We work for a rival ratings company and have been tasked with reverse engineering their methods, finding out what values are assigned to specific stats.</description>
+    </item>
     
     <item>
       <title>Useless AFL Stats Dashboard</title>

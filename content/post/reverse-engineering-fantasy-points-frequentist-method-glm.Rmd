@@ -1,0 +1,324 @@
+---
+title: 'Reverse Engineering Fantasy Points: Frequentist Method with Generalised Linear Models'
+author: Liam Crowhurst
+date: '2020-08-04'
+slug: reverse-engineering-fantasy-points-frequentist-method-glm
+categories:
+  - AFL Analysis
+tags:
+  - R
+  - Useful AFL Stats
+description: 'A beginners overview of generalised linear models (GLMs), using them to reverse engineer fantasy points.'
+banner: "images/glm_fantasy_points.png"
+menu: ''
+---
+
+## Hypothetical Situation:
+
+Fantasy points (FP) are a black box algorithm: no one knows what calculations are made to generate points. It's a closely guarded industry secret and they don't want to release their methodology to the rest of the AFL analytics community. We work for a rival ratings company and have been tasked with reverse engineering their methods, finding out what values are assigned to specific stats.
+
+After a bit of corporate espionage, we now know the following:
+
+* There are at most 13 stats in generating FP 
+    + Kicks, handballs, marks, tackles, inside 50's, bounces, frees for, frees against, one percenters, hitouts, goals, behinds & goal assists
+    + We are going to have to figure out which stats are used in calculations
+* A small amount of random noise is added to further obscure the methodology
+    + We can assume that the noise is normally distributed
+* A small percent of players have a chunk points randomly added or removed from the final score
+    + Further masks the methodology
+* A shift may have been applied
+    + All data points have been increase or decreased by a fixed amount
+* We also assume that each player, team and game a scored using the same methodology
+
+We have been given the following data from the 2019 season with their corresponding FP:
+
+<details><summary>See data generation:</summary>
+
+```{r code}
+library(dplyr)
+# afltables <- fitzRoy::get_afltables_stats(start_date = "2019-01-01", end_date = "2020-01-01") %>% 
+#   rename_with(snakecase::to_snake_case)
+# saveRDS(afltables, file = "reverse_eng_aftables.rds")
+afltables <- readRDS("reverse_eng_aftables.rds")
+
+set.seed(20120805)
+afltables_2019_fp <- afltables %>% 
+  select(kicks, handballs, marks, tackles, inside_50_s, bounces, 
+         frees_for, frees_against, one_percenters, hit_outs, goals, behinds, goal_assists) %>% 
+  mutate(
+    fp = kicks*3 + handballs*2 + marks*3 + tackles*4 + frees_for*1 + 
+      frees_against*-3 + hit_outs + goals*6 + behinds, .before = 'kicks'
+  ) %>% 
+  rowwise() %>% 
+  mutate(
+    fp = fp + 2,
+    fp = fp + rnorm(1, 0, 3), #mean of 0 and SD of 3
+    # fp = fp + rpois(1, 2),
+    # fp = fp + rgamma(1, 2),
+    # fp = fp + runif(1, -2, 2),
+    fp = 
+      case_when(
+        runif(1) < 0.001 ~ fp + 20,
+        runif(1) > 0.999 ~ fp - 20,
+        T ~ fp
+      )
+  ) %>% ungroup()
+```
+
+</details>
+
+```{r message=F, warning=F}
+print(afltables_2019_fp, width = Inf)
+```
+
+We want to investigate the effect of stats on the final result, and we are going to be using generalised linear models (GLMs).
+
+## Data exploration
+
+A good place to start is a pair-wise correlation plot, which shows us predictive variables that may be highly correlated with each other. High correlation among predictors (multicollinearity) means you can predict one variable using another predictor variable and means we have redundancy in our data. This results in unstable parameter estimates of regression which makes it very difficult to assess the effect of independent variables on dependent variables. The standard error (SE) of such parameters becomes very high.
+
+```{r warning=F, message=F}
+library(GGally)
+ggcorr(afltables_2019_fp[,-1], geom = 'tile', layout.exp = 1,
+       palette = "PuOr", hjust = 0.85, size = 3.5, label = T)
+```
+
+A correlation coefficient higher than 0.7 or lower than -0.7 is normally a cause for concern and would result in the removal of one of the variables (among other methods). In our data, the highest is 0.5 and we can now assume there is no multicollinearity between predictors.
+
+## Frequentist: Generalised Linear Models
+
+### Setting up the Formula
+
+Formulas in R are set up with the following syntax: `<response> ~ <variable1> + <variable2> + ...`. The response in this case is `fp` and variables (or predictors) are the stats.
+
+In this example we won't be investigating higher order interactions between terms.
+
+```{r}
+formula <- "fp ~ kicks + handballs + marks + tackles + inside_50_s + bounces + frees_for + 
+frees_against + one_percenters + hit_outs + goals + behinds + goal_assists"
+```
+
+### Choosing a (Distribution) Family
+
+Next step in setting up a glm is to specify the distribution family, and a good way to choose one is to find out what domain the response exists in. This requires some knowledge of the data set and using a density plot can aid us in making a decision. Common distributions include:
+
+* Gaussian (normal): Continuous unbounded (positive and negative real numbers)
+* Gamma: Continuous positive
+* Poisson: Integer positive
+* Logistic: Continuous between 0 and 1 (or exclusively 0 and 1)
+
+```{r}
+library(ggplot2)
+ggplot(afltables_2019_fp, aes(x = fp)) +
+  geom_density() +
+  geom_rug() +
+  ggtitle("Distribution of Fantasy Points") + ylab("") + xlab("FP")
+```
+
+It's important to note that FP can be negative, therefore FP is continuous and unbounded. With this knowledge, it makes sense to choose the normal (Gaussian) distribution.
+
+### Selecting a Link
+
+We also need to select a link, and have 3 options with the Gaussian family:
+
+1. Identity: An increase in a stat corresponds to an linear increase in FP
+2. Log: An increase in a stat corresponds to an proportional increase in FP
+3. Inverse: An increase in a stat corresponds to an inverse increase in FP
+
+We are going to be using the identity link, mainly because it's the easiest to interpret and falls in line with standard linear regressions.
+
+### Running the Model + Interpretation
+
+Putting it all together, and we can check the model summary.
+
+```{r glm_setup}
+glm1 <- glm(
+  formula = formula,
+  data = afltables_2019_fp,
+  family = gaussian(link = "identity")
+)
+
+summary(glm1)
+```
+
+The model has been run and the results are being displayed above. Let's examine it one step at a time.
+
+`Call` shows us what model has been run. `Deviance Residuals` give a quick insight into the distribution of the residuals, which should be normally distributed around 0. Looks good so far, median $\approx$ 0, and the quartiles and min/max are approximately symmetrical. We'll be generating residuals plots to better understand it later.
+
+`Coefficients` contains the information regarding estimates for the intercept and each stat. The estimate column (when using the "identity" link) shows the mean effect of each term in the model. For example, an increase by one (unit of) tackle increases FP by an estimate of 4.03.
+
+`Std. Error` is the error term associated with the term's estimate. Low standard error means the model in more certain that the mean estimate. The `Pr(>|t|)` is the p-value, a calculation based off the t-value and the degrees of freedom in the model.
+
+The p-value is a uniquely frequentist form of test set up to determine whether the estimated mean has a statistically significant difference to 0 in the form of a null hypothesis. It can be described by following equation:
+
+$$
+H_0:\mu = 0
+$$
+
+where $\mu$ is the term (variable). Normally a p-value of 0.05 is tested against, with a p-value greater than 0.05 meaning we "Accept the null hypothesis" (that the estimate is equal to 0, therefore has no effect). If the p-value is less than 0.05, then we "Fail to reject the null hypothesis" (that the estimate is not equal to 0, and has an effect).
+
+`(Intercept)` has an estimate of 2.09, and is statistically significant (2e-16 is less than 0.05). We can use the `Std. Error` (Standard Error (SE)) to calculate a confidence interval, which is much easier to interpret (we use the constant 1.96 due to using a 95%CI, a 99%CI would use 2.58):
+
+$$
+95\% \texttt{ Confidence Interval}: \texttt{Estimate}\pm1.96*\texttt{SE}\\
+\texttt{Intercept} = 2.09(95\%CI[1.87, 2.3])
+$$
+
+According to the model, we can be 95% sure that the intercept is between 1.87 and 2.3. The intercept is interpreted as the shift applied the entire dataset.
+
+Looking at the other predictive variables, we can see that 10 of the 13 variables have p-values below the threshold of 0.05. You'll notice that the variables with a p-value above the threshold have estimates close to (and overlapping with 95%CI) 0. For example, every bounce adds approximately 0 to FP, while kicks adds 3.012 (95%CI[2.99,3.03]) per kick to total FP.
+
+```{r}
+par(mfrow=c(2,2))
+plot(glm1)
+```
+
+The residuals vs fitted plot shows a nice linear constant distribution of residuals. If the variance increased (fanned out) we would have heteroscedasticity, and if there's curvature then our model is most likely missing a squared (or nonlinear) term.
+
+### Outlier Detection
+
+The QQ plot is quite nice, majority of the points fall on the dashed line, with the exception of a few outliers, which we will now remove. Using Cook's Distance, we can see how individual observations effect the model and will remove the points that have the biggest effect. The bigger the value, the more influence that point has on the model.
+
+```{r}
+par(mfrow=c(1,1))
+plot(cooks.distance(glm1))
+```
+
+There appears to be some outliers in the dataset, we can remove about 30 data points (30/9000 or 0.3% of points). We are going to rerun the model with these outliers removed.
+
+```{r}
+afltables_2019_fp_out_rem <- afltables_2019_fp %>% 
+  mutate(
+    id = row_number(),
+    cooks_d = cooks.distance(glm1)
+  ) %>% 
+  arrange(-cooks_d) %>% # assign each obs its Cooks D
+  slice(-(1:30)) %>%    # remove the top 30
+  arrange(id)
+
+# rerun the model without outliers
+glm2 <- glm(
+  formula = formula,
+  data = afltables_2019_fp_out_rem, 
+  family = gaussian(link = 'identity')
+)
+
+summary(glm2)
+```
+
+```{r}
+par(mfrow=c(2,2))
+plot(glm2)
+```
+
+QQ plot tails are nicer.
+
+```{r}
+par(mfrow=c(1,1))
+plot(cooks.distance(glm2))
+```
+
+No individual points really stand out, no more outliers we can confidently remove.
+
+### Remove Non-informative Variables
+
+The next step is to remove variables that have no predictive power on the model, and we can calculate this using the AIC metric. Akaike's Information Criterion (AIC) is a penalisation term for models. Essentially, lower AIC is better, and we can use the following code to perform this automatically. The process may look a lot is going on, but I'll do my best to break it down.
+
+```{r}
+glm2_step <- MASS::stepAIC(glm2, direction = 'both')
+```
+
+We start off with `AIC = 45828.27`, and the stepwise AIC calculates that removing `goal_assists` reduces the AIC, and the new model has an `AIC = 45826.3`, thus improving the model. This process is repeated until removing variables no longer decreases the AIC. Using `direction = 'both'` allows for the algorithm to check if re-adding previously removed variables increases the AIC. In this case, it doesn't.
+
+Let's check out the summary for our new model.
+
+```{r}
+summary(glm2_step)
+```
+
+The model suggests that `inside_50_s` is a statistically significant variable, but on closer inspection it seems something weird is going on. Each inside 50 adds -0.056 (95%CI[-0.095,-0.017]) to the FP score, which begs the question: does FP penalise for inside 50's? Using our intuition it seems much more likely that the true effect is 0, and can reasonably argued for it to be excluded from the model.
+
+```{r}
+formula_3 <- "fp ~ kicks + handballs + marks + tackles + frees_for + 
+frees_against + hit_outs + goals + behinds"
+
+glm3 <- glm(
+  formula = formula_3,
+  data = afltables_2019_fp_out_rem, 
+  family = gaussian(link = 'identity')
+)
+
+summary(glm3)
+```
+
+Interestingly, the AIC did increase but the residual deviance decreased.
+
+### Presenting Results
+
+Next step is to convey the estimates and confidence intervals.
+
+```{r}
+library(broom)
+glm3_coef <- tidy(glm3)
+glm3_confint <- glm3_coef %>% 
+  mutate(
+    lb = estimate-1.96*std.error,
+    ub = estimate+1.96*std.error,
+  )
+
+library(ggplot2)
+ggplot(glm3_confint, aes(x=estimate, y=reorder(term, desc(term)))) + 
+  geom_errorbar(aes(xmin=lb, xmax=ub), width=.3) +
+  geom_point() +
+  ggtitle("The Effect of AFL Statistics on Total Fantasy Points") + 
+  xlab("Estimate (95% CI)") + ylab("Term")
+```
+
+We are 95% confident that the true mean of the term is between these confidence intervals.
+
+```{r}
+glm3_confint_clean <- 
+  glm3_confint %>% 
+  mutate(
+    estimate = round(estimate, 2),
+    lb = round(lb, 2),
+    ub = round(ub, 2)
+  ) %>% 
+  select(Term = term, Estimate = estimate, `Lower Bound` = lb, `Upper Bound` = ub)
+
+DT::datatable(glm3_confint_clean, rownames = F, width = 500,
+              caption = "The Effect of AFL Statistics on Total Fantasy Points (95%CI)", 
+              options = list(dom = 't'))
+```
+
+## Conclusion
+
+It turns out that Fantasy Points have been made publicly available, which means we can now compare our results to the real deal. (I've applied a shift of 2, mainly to illustrate the use of `(Intercept)` in the model).
+
+```{r warning=F}
+glm3_confint_true <- glm3_confint %>% 
+  mutate(
+    true_estimate = case_when(
+      term == "kicks" ~ 3,
+      term == "handballs" ~ 2,
+      term == "marks" ~ 3,
+      term == "tackles" ~ 4,
+      term == "frees_for" ~ 1,
+      term == "frees_against" ~ -3,
+      term == "hit_outs" ~ 1,
+      term == "goals" ~ 6,
+      term == "behinds" ~ 1
+    )
+  )
+
+ggplot(glm3_confint_true, aes(x=estimate, y=reorder(term, desc(term)))) +
+  geom_errorbar(aes(xmin=lb, xmax=ub), width=.3) +
+  geom_point() +
+  geom_point(aes(x=true_estimate, y=reorder(term, desc(term))), colour = 'red') +
+  ggtitle("The Effect of AFL Statistics on Total Fantasy Points") +
+  xlab("Estimate (95% CI)") + ylab("Term")
+```
+
+The red dots represent the true points assigned to each statistic, and we can see that after this process our model correctly identifies the true values, despite the addition of random noise and artificial outliers.
+
+Make sure to tweet at me [\@crow_data_sci](https://twitter.com/crow_data_sci){target='blank'} about ideas, corrections and clarifications! I'm also planning to do a Bayesian/simulation based regression in `brms`, that will follow the same data and flow.

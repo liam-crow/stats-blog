@@ -1,0 +1,526 @@
+---
+title: 'Reverse Engineering Fantasy Points: Frequentist Method with Generalised Linear Models'
+author: Liam Crowhurst
+date: '2020-08-04'
+slug: reverse-engineering-fantasy-points-frequentist-method-glm
+categories:
+  - AFL Analysis
+tags:
+  - R
+  - Useful AFL Stats
+description: 'A beginners overview of generalised linear models (GLMs), using them to reverse engineer fantasy points.'
+banner: "images/glm_fantasy_points.png"
+menu: ''
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+
+
+<div id="hypothetical-situation" class="section level2">
+<h2>Hypothetical Situation:</h2>
+<p>Fantasy points (FP) are a black box algorithm: no one knows what calculations are made to generate points. It’s a closely guarded industry secret and they don’t want to release their methodology to the rest of the AFL analytics community. We work for a rival ratings company and have been tasked with reverse engineering their methods, finding out what values are assigned to specific stats.</p>
+<p>After a bit of corporate espionage, we now know the following:</p>
+<ul>
+<li>There are at most 13 stats in generating FP
+<ul>
+<li>Kicks, handballs, marks, tackles, inside 50’s, bounces, frees for, frees against, one percenters, hitouts, goals, behinds &amp; goal assists</li>
+<li>We are going to have to figure out which stats are used in calculations</li>
+</ul></li>
+<li>A small amount of random noise is added to further obscure the methodology
+<ul>
+<li>We can assume that the noise is normally distributed</li>
+</ul></li>
+<li>A small percent of players have a chunk points randomly added or removed from the final score
+<ul>
+<li>Further masks the methodology</li>
+</ul></li>
+<li>A shift may have been applied
+<ul>
+<li>All data points have been increase or decreased by a fixed amount</li>
+</ul></li>
+<li>We also assume that each player, team and game a scored using the same methodology</li>
+</ul>
+<p>We have been given the following data from the 2019 season with their corresponding FP:</p>
+<details>
+<p><summary>See data generation:</summary></p>
+<pre class="r"><code>library(dplyr)</code></pre>
+<pre><code>## 
+## Attaching package: &#39;dplyr&#39;</code></pre>
+<pre><code>## The following objects are masked from &#39;package:stats&#39;:
+## 
+##     filter, lag</code></pre>
+<pre><code>## The following objects are masked from &#39;package:base&#39;:
+## 
+##     intersect, setdiff, setequal, union</code></pre>
+<pre class="r"><code># afltables &lt;- fitzRoy::get_afltables_stats(start_date = &quot;2019-01-01&quot;, end_date = &quot;2020-01-01&quot;) %&gt;% 
+#   rename_with(snakecase::to_snake_case)
+# saveRDS(afltables, file = &quot;reverse_eng_aftables.rds&quot;)
+afltables &lt;- readRDS(&quot;reverse_eng_aftables.rds&quot;)
+
+set.seed(20120805)
+afltables_2019_fp &lt;- afltables %&gt;% 
+  select(kicks, handballs, marks, tackles, inside_50_s, bounces, 
+         frees_for, frees_against, one_percenters, hit_outs, goals, behinds, goal_assists) %&gt;% 
+  mutate(
+    fp = kicks*3 + handballs*2 + marks*3 + tackles*4 + frees_for*1 + 
+      frees_against*-3 + hit_outs + goals*6 + behinds, .before = &#39;kicks&#39;
+  ) %&gt;% 
+  rowwise() %&gt;% 
+  mutate(
+    fp = fp + 2,
+    fp = fp + rnorm(1, 0, 3), #mean of 0 and SD of 3
+    # fp = fp + rpois(1, 2),
+    # fp = fp + rgamma(1, 2),
+    # fp = fp + runif(1, -2, 2),
+    fp = 
+      case_when(
+        runif(1) &lt; 0.001 ~ fp + 20,
+        runif(1) &gt; 0.999 ~ fp - 20,
+        T ~ fp
+      )
+  ) %&gt;% ungroup()</code></pre>
+</details>
+<pre class="r"><code>print(afltables_2019_fp, width = Inf)</code></pre>
+<pre><code>## # A tibble: 9,108 x 14
+##       fp kicks handballs marks tackles inside_50_s bounces frees_for
+##    &lt;dbl&gt; &lt;dbl&gt;     &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;       &lt;dbl&gt;   &lt;dbl&gt;     &lt;dbl&gt;
+##  1 101.     10        22     1       6           2       1         3
+##  2  82.2     9        13     5       5           5       0         1
+##  3  43.7    10         2     1       1           2       0         0
+##  4 114.     13        12    12       3           3       0         1
+##  5  64.5     8        13     3       2           3       0         1
+##  6  27.1     4         1     2       1           0       0         1
+##  7  81.4    14         8     2       6           3       0         1
+##  8  57.3     8         1     3       4           0       0         0
+##  9  47.3     5         6     2       3           1       0         0
+## 10  56.6     4         4     3       5           0       0         3
+##    frees_against one_percenters hit_outs goals behinds goal_assists
+##            &lt;dbl&gt;          &lt;dbl&gt;    &lt;dbl&gt; &lt;dbl&gt;   &lt;dbl&gt;        &lt;dbl&gt;
+##  1             1              0        0     0       0            0
+##  2             2              0        0     0       0            1
+##  3             2              0        0     1       0            0
+##  4             0              1        0     0       1            1
+##  5             1              1        0     0       1            0
+##  6             1              0        0     1       0            0
+##  7             4              3        0     1       1            1
+##  8             0              2        0     0       0            0
+##  9             1              2        0     0       1            0
+## 10             1              7        0     0       0            0
+## # ... with 9,098 more rows</code></pre>
+<p>We want to investigate the effect of stats on the final result, and we are going to be using generalised linear models (GLMs).</p>
+</div>
+<div id="data-exploration" class="section level2">
+<h2>Data exploration</h2>
+<p>A good place to start is a pair-wise correlation plot, which shows us predictive variables that may be highly correlated with each other. High correlation among predictors (multicollinearity) means you can predict one variable using another predictor variable and means we have redundancy in our data. This results in unstable parameter estimates of regression which makes it very difficult to assess the effect of independent variables on dependent variables. The standard error (SE) of such parameters becomes very high.</p>
+<pre class="r"><code>library(GGally)
+ggcorr(afltables_2019_fp[,-1], geom = &#39;tile&#39;, layout.exp = 1,
+       palette = &quot;PuOr&quot;, hjust = 0.85, size = 3.5, label = T)</code></pre>
+<p><img src="/post/reverse-engineering-fantasy-points-frequentist-method-glm_files/figure-html/unnamed-chunk-2-1.png" width="672" /></p>
+<p>A correlation coefficient higher than 0.7 or lower than -0.7 is normally a cause for concern and would result in the removal of one of the variables (among other methods). In our data, the highest is 0.5 and we can now assume there is no multicollinearity between predictors.</p>
+</div>
+<div id="frequentist-generalised-linear-models" class="section level2">
+<h2>Frequentist: Generalised Linear Models</h2>
+<div id="setting-up-the-formula" class="section level3">
+<h3>Setting up the Formula</h3>
+<p>Formulas in R are set up with the following syntax: <code>&lt;response&gt; ~ &lt;variable1&gt; + &lt;variable2&gt; + ...</code>. The response in this case is <code>fp</code> and variables (or predictors) are the stats.</p>
+<p>In this example we won’t be investigating higher order interactions between terms.</p>
+<pre class="r"><code>formula &lt;- &quot;fp ~ kicks + handballs + marks + tackles + inside_50_s + bounces + frees_for + 
+frees_against + one_percenters + hit_outs + goals + behinds + goal_assists&quot;</code></pre>
+</div>
+<div id="choosing-a-distribution-family" class="section level3">
+<h3>Choosing a (Distribution) Family</h3>
+<p>Next step in setting up a glm is to specify the distribution family, and a good way to choose one is to find out what domain the response exists in. This requires some knowledge of the data set and using a density plot can aid us in making a decision. Common distributions include:</p>
+<ul>
+<li>Gaussian (normal): Continuous unbounded (positive and negative real numbers)</li>
+<li>Gamma: Continuous positive</li>
+<li>Poisson: Integer positive</li>
+<li>Logistic: Continuous between 0 and 1 (or exclusively 0 and 1)</li>
+</ul>
+<pre class="r"><code>library(ggplot2)
+ggplot(afltables_2019_fp, aes(x = fp)) +
+  geom_density() +
+  geom_rug() +
+  ggtitle(&quot;Distribution of Fantasy Points&quot;) + ylab(&quot;&quot;) + xlab(&quot;FP&quot;)</code></pre>
+<p><img src="/post/reverse-engineering-fantasy-points-frequentist-method-glm_files/figure-html/unnamed-chunk-4-1.png" width="672" /></p>
+<p>It’s important to note that FP can be negative, therefore FP is continuous and unbounded. With this knowledge, it makes sense to choose the normal (Gaussian) distribution.</p>
+</div>
+<div id="selecting-a-link" class="section level3">
+<h3>Selecting a Link</h3>
+<p>We also need to select a link, and have 3 options with the Gaussian family:</p>
+<ol style="list-style-type: decimal">
+<li>Identity: An increase in a stat corresponds to an linear increase in FP</li>
+<li>Log: An increase in a stat corresponds to an proportional increase in FP</li>
+<li>Inverse: An increase in a stat corresponds to an inverse increase in FP</li>
+</ol>
+<p>We are going to be using the identity link, mainly because it’s the easiest to interpret and falls in line with standard linear regressions.</p>
+</div>
+<div id="running-the-model-interpretation" class="section level3">
+<h3>Running the Model + Interpretation</h3>
+<p>Putting it all together, and we can check the model summary.</p>
+<pre class="r"><code>glm1 &lt;- glm(
+  formula = formula,
+  data = afltables_2019_fp,
+  family = gaussian(link = &quot;identity&quot;)
+)
+
+summary(glm1)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = formula, family = gaussian(link = &quot;identity&quot;), 
+##     data = afltables_2019_fp)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -23.8761   -2.0752    0.0152    2.0318   25.9347  
+## 
+## Coefficients:
+##                  Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)     2.0892003  0.1099437  19.002   &lt;2e-16 ***
+## kicks           3.0123931  0.0100210 300.608   &lt;2e-16 ***
+## handballs       1.9856901  0.0084920 233.830   &lt;2e-16 ***
+## marks           2.9898337  0.0164047 182.254   &lt;2e-16 ***
+## tackles         4.0360824  0.0161849 249.373   &lt;2e-16 ***
+## inside_50_s    -0.0506948  0.0217571  -2.330   0.0198 *  
+## bounces         0.0411818  0.0462881   0.890   0.3737    
+## frees_for       0.9838578  0.0349754  28.130   &lt;2e-16 ***
+## frees_against  -3.0309144  0.0337349 -89.845   &lt;2e-16 ***
+## one_percenters  0.0000577  0.0147666   0.004   0.9969    
+## hit_outs        0.9948819  0.0049551 200.778   &lt;2e-16 ***
+## goals           6.0652085  0.0381539 158.967   &lt;2e-16 ***
+## behinds         0.9645699  0.0491625  19.620   &lt;2e-16 ***
+## goal_assists   -0.0034078  0.0537769  -0.063   0.9495    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 9.806355)
+## 
+##     Null deviance: 6561783  on 9107  degrees of freedom
+## Residual deviance:   89179  on 9094  degrees of freedom
+## AIC: 46657
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<p>The model has been run and the results are being displayed above. Let’s examine it one step at a time.</p>
+<p><code>Call</code> shows us what model has been run. <code>Deviance Residuals</code> give a quick insight into the distribution of the residuals, which should be normally distributed around 0. Looks good so far, median <span class="math inline">\(\approx\)</span> 0, and the quartiles and min/max are approximately symmetrical. We’ll be generating residuals plots to better understand it later.</p>
+<p><code>Coefficients</code> contains the information regarding estimates for the intercept and each stat. The estimate column (when using the “identity” link) shows the mean effect of each term in the model. For example, an increase by one (unit of) tackle increases FP by an estimate of 4.03.</p>
+<p><code>Std. Error</code> is the error term associated with the term’s estimate. Low standard error means the model in more certain that the mean estimate. The <code>Pr(&gt;|t|)</code> is the p-value, a calculation based off the t-value and the degrees of freedom in the model.</p>
+<p>The p-value is a uniquely frequentist form of test set up to determine whether the estimated mean has a statistically significant difference to 0 in the form of a null hypothesis. It can be described by following equation:</p>
+<p><span class="math display">\[
+H_0:\mu = 0
+\]</span></p>
+<p>where <span class="math inline">\(\mu\)</span> is the term (variable). Normally a p-value of 0.05 is tested against, with a p-value greater than 0.05 meaning we “Accept the null hypothesis” (that the estimate is equal to 0, therefore has no effect). If the p-value is less than 0.05, then we “Fail to reject the null hypothesis” (that the estimate is not equal to 0, and has an effect).</p>
+<p><code>(Intercept)</code> has an estimate of 2.09, and is statistically significant (2e-16 is less than 0.05). We can use the <code>Std. Error</code> (Standard Error (SE)) to calculate a confidence interval, which is much easier to interpret (we use the constant 1.96 due to using a 95%CI, a 99%CI would use 2.58):</p>
+<p><span class="math display">\[
+95\% \texttt{ Confidence Interval}: \texttt{Estimate}\pm1.96*\texttt{SE}\\
+\texttt{Intercept} = 2.09(95\%CI[1.87, 2.3])
+\]</span></p>
+<p>According to the model, we can be 95% sure that the intercept is between 1.87 and 2.3. The intercept is interpreted as the shift applied the entire dataset.</p>
+<p>Looking at the other predictive variables, we can see that 10 of the 13 variables have p-values below the threshold of 0.05. You’ll notice that the variables with a p-value above the threshold have estimates close to (and overlapping with 95%CI) 0. For example, every bounce adds approximately 0 to FP, while kicks adds 3.012 (95%CI[2.99,3.03]) per kick to total FP.</p>
+<pre class="r"><code>par(mfrow=c(2,2))
+plot(glm1)</code></pre>
+<p><img src="/post/reverse-engineering-fantasy-points-frequentist-method-glm_files/figure-html/unnamed-chunk-5-1.png" width="672" /></p>
+<p>The residuals vs fitted plot shows a nice linear constant distribution of residuals. If the variance increased (fanned out) we would have heteroscedasticity, and if there’s curvature then our model is most likely missing a squared (or nonlinear) term.</p>
+</div>
+<div id="outlier-detection" class="section level3">
+<h3>Outlier Detection</h3>
+<p>The QQ plot is quite nice, majority of the points fall on the dashed line, with the exception of a few outliers, which we will now remove. Using Cook’s Distance, we can see how individual observations effect the model and will remove the points that have the biggest effect. The bigger the value, the more influence that point has on the model.</p>
+<pre class="r"><code>par(mfrow=c(1,1))
+plot(cooks.distance(glm1))</code></pre>
+<p><img src="/post/reverse-engineering-fantasy-points-frequentist-method-glm_files/figure-html/unnamed-chunk-6-1.png" width="672" /></p>
+<p>There appears to be some outliers in the dataset, we can remove about 30 data points (30/9000 or 0.3% of points). We are going to rerun the model with these outliers removed.</p>
+<pre class="r"><code>afltables_2019_fp_out_rem &lt;- afltables_2019_fp %&gt;% 
+  mutate(
+    id = row_number(),
+    cooks_d = cooks.distance(glm1)
+  ) %&gt;% 
+  arrange(-cooks_d) %&gt;% # assign each obs its Cooks D
+  slice(-(1:30)) %&gt;%    # remove the top 30
+  arrange(id)
+
+# rerun the model without outliers
+glm2 &lt;- glm(
+  formula = formula,
+  data = afltables_2019_fp_out_rem, 
+  family = gaussian(link = &#39;identity&#39;)
+)
+
+summary(glm2)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = formula, family = gaussian(link = &quot;identity&quot;), 
+##     data = afltables_2019_fp_out_rem)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -18.3848   -2.0720    0.0121    2.0219   16.8099  
+## 
+## Coefficients:
+##                 Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)     2.069185   0.106339  19.458   &lt;2e-16 ***
+## kicks           3.014910   0.009671 311.741   &lt;2e-16 ***
+## handballs       1.987187   0.008196 242.472   &lt;2e-16 ***
+## marks           2.983426   0.015866 188.044   &lt;2e-16 ***
+## tackles         4.033991   0.015660 257.604   &lt;2e-16 ***
+## inside_50_s    -0.054049   0.021004  -2.573   0.0101 *  
+## bounces         0.055426   0.045887   1.208   0.2271    
+## frees_for       1.000116   0.033831  29.562   &lt;2e-16 ***
+## frees_against  -3.040852   0.032581 -93.331   &lt;2e-16 ***
+## one_percenters  0.007380   0.014268   0.517   0.6050    
+## hit_outs        0.996866   0.004812 207.166   &lt;2e-16 ***
+## goals           6.077538   0.036991 164.296   &lt;2e-16 ***
+## behinds         0.975389   0.047510  20.530   &lt;2e-16 ***
+## goal_assists   -0.009567   0.051917  -0.184   0.8538    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 9.103323)
+## 
+##     Null deviance: 6491380  on 9077  degrees of freedom
+## Residual deviance:   82513  on 9064  degrees of freedom
+## AIC: 45828
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<pre class="r"><code>par(mfrow=c(2,2))
+plot(glm2)</code></pre>
+<p><img src="/post/reverse-engineering-fantasy-points-frequentist-method-glm_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+<p>QQ plot tails are nicer.</p>
+<pre class="r"><code>par(mfrow=c(1,1))
+plot(cooks.distance(glm2))</code></pre>
+<p><img src="/post/reverse-engineering-fantasy-points-frequentist-method-glm_files/figure-html/unnamed-chunk-9-1.png" width="672" /></p>
+<p>No individual points really stand out, no more outliers we can confidently remove.</p>
+</div>
+<div id="remove-non-informative-variables" class="section level3">
+<h3>Remove Non-informative Variables</h3>
+<p>The next step is to remove variables that have no predictive power on the model, and we can calculate this using the AIC metric. Akaike’s Information Criterion (AIC) is a penalisation term for models. Essentially, lower AIC is better, and we can use the following code to perform this automatically. The process may look a lot is going on, but I’ll do my best to break it down.</p>
+<pre class="r"><code>glm2_step &lt;- MASS::stepAIC(glm2, direction = &#39;both&#39;)</code></pre>
+<pre><code>## Start:  AIC=45828.27
+## fp ~ kicks + handballs + marks + tackles + inside_50_s + bounces + 
+##     frees_for + frees_against + one_percenters + hit_outs + goals + 
+##     behinds + goal_assists
+## 
+##                  Df Deviance   AIC
+## - goal_assists    1    82513 45826
+## - one_percenters  1    82515 45827
+## - bounces         1    82526 45828
+## &lt;none&gt;                 82513 45828
+## - inside_50_s     1    82573 45833
+## - behinds         1    86350 46239
+## - frees_for       1    90468 46662
+## - frees_against   1   161809 51940
+## - goals           1   328241 58361
+## - marks           1   404412 60256
+## - hit_outs        1   473206 61682
+## - handballs       1   617719 64101
+## - tackles         1   686607 65061
+## - kicks           1   967196 68171
+## 
+## Step:  AIC=45826.3
+## fp ~ kicks + handballs + marks + tackles + inside_50_s + bounces + 
+##     frees_for + frees_against + one_percenters + hit_outs + goals + 
+##     behinds
+## 
+##                  Df Deviance   AIC
+## - one_percenters  1    82515 45825
+## - bounces         1    82526 45826
+## &lt;none&gt;                 82513 45826
+## + goal_assists    1    82513 45828
+## - inside_50_s     1    82579 45832
+## - behinds         1    86353 46237
+## - frees_for       1    90473 46660
+## - frees_against   1   161814 51938
+## - goals           1   330714 58427
+## - marks           1   404981 60266
+## - hit_outs        1   473494 61685
+## - handballs       1   619111 64119
+## - tackles         1   686793 65061
+## - kicks           1   970731 68202
+## 
+## Step:  AIC=45824.58
+## fp ~ kicks + handballs + marks + tackles + inside_50_s + bounces + 
+##     frees_for + frees_against + hit_outs + goals + behinds
+## 
+##                  Df Deviance   AIC
+## - bounces         1    82528 45824
+## &lt;none&gt;                 82515 45825
+## + one_percenters  1    82513 45826
+## + goal_assists    1    82515 45827
+## - inside_50_s     1    82588 45831
+## - behinds         1    86395 46240
+## - frees_for       1    90519 46663
+## - frees_against   1   161887 51940
+## - goals           1   338089 58626
+## - marks           1   412895 60440
+## - hit_outs        1   477291 61756
+## - handballs       1   628707 64257
+## - tackles         1   687665 65071
+## - kicks           1   970732 68200
+## 
+## Step:  AIC=45824
+## fp ~ kicks + handballs + marks + tackles + inside_50_s + frees_for + 
+##     frees_against + hit_outs + goals + behinds
+## 
+##                  Df Deviance   AIC
+## &lt;none&gt;                 82528 45824
+## + bounces         1    82515 45825
+## + one_percenters  1    82526 45826
+## + goal_assists    1    82528 45826
+## - inside_50_s     1    82598 45830
+## - behinds         1    86403 46239
+## - frees_for       1    90520 46661
+## - frees_against   1   161972 51943
+## - goals           1   338123 58624
+## - marks           1   413917 60461
+## - hit_outs        1   477681 61761
+## - handballs       1   629399 64265
+## - tackles         1   689561 65094
+## - kicks           1   991022 68386</code></pre>
+<p>We start off with <code>AIC = 45828.27</code>, and the stepwise AIC calculates that removing <code>goal_assists</code> reduces the AIC, and the new model has an <code>AIC = 45826.3</code>, thus improving the model. This process is repeated until removing variables no longer decreases the AIC. Using <code>direction = 'both'</code> allows for the algorithm to check if re-adding previously removed variables increases the AIC. In this case, it doesn’t.</p>
+<p>Let’s check out the summary for our new model.</p>
+<pre class="r"><code>summary(glm2_step)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = fp ~ kicks + handballs + marks + tackles + inside_50_s + 
+##     frees_for + frees_against + hit_outs + goals + behinds, family = gaussian(link = &quot;identity&quot;), 
+##     data = afltables_2019_fp_out_rem)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -18.3897   -2.0712    0.0067    2.0277   16.7968  
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)    2.093698   0.096962  21.593  &lt; 2e-16 ***
+## kicks          3.016683   0.009549 315.930  &lt; 2e-16 ***
+## handballs      1.986821   0.008106 245.117  &lt; 2e-16 ***
+## marks          2.983426   0.015636 190.809  &lt; 2e-16 ***
+## tackles        4.032478   0.015615 258.248  &lt; 2e-16 ***
+## inside_50_s   -0.055593   0.020097  -2.766  0.00568 ** 
+## frees_for      0.999574   0.033735  29.630  &lt; 2e-16 ***
+## frees_against -3.041033   0.032551 -93.424  &lt; 2e-16 ***
+## hit_outs       0.996921   0.004785 208.359  &lt; 2e-16 ***
+## goals          6.073662   0.036245 167.574  &lt; 2e-16 ***
+## behinds        0.971072   0.047064  20.633  &lt; 2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 9.102053)
+## 
+##     Null deviance: 6491380  on 9077  degrees of freedom
+## Residual deviance:   82528  on 9067  degrees of freedom
+## AIC: 45824
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<p>The model suggests that <code>inside_50_s</code> is a statistically significant variable, but on closer inspection it seems something weird is going on. Each inside 50 adds -0.056 (95%CI[-0.095,-0.017]) to the FP score, which begs the question: does FP penalise for inside 50’s? Using our intuition it seems much more likely that the true effect is 0, and can reasonably argued for it to be excluded from the model.</p>
+<pre class="r"><code>formula_3 &lt;- &quot;fp ~ kicks + handballs + marks + tackles + frees_for + 
+frees_against + hit_outs + goals + behinds&quot;
+
+glm3 &lt;- glm(
+  formula = formula_3,
+  data = afltables_2019_fp_out_rem, 
+  family = gaussian(link = &#39;identity&#39;)
+)
+
+summary(glm3)</code></pre>
+<pre><code>## 
+## Call:
+## glm(formula = formula_3, family = gaussian(link = &quot;identity&quot;), 
+##     data = afltables_2019_fp_out_rem)
+## 
+## Deviance Residuals: 
+##      Min        1Q    Median        3Q       Max  
+## -18.4164   -2.0786    0.0108    2.0108   16.8300  
+## 
+## Coefficients:
+##                Estimate Std. Error t value Pr(&gt;|t|)    
+## (Intercept)    2.107037   0.096878   21.75   &lt;2e-16 ***
+## kicks          3.004733   0.008519  352.72   &lt;2e-16 ***
+## handballs      1.982782   0.007976  248.59   &lt;2e-16 ***
+## marks          2.991265   0.015382  194.46   &lt;2e-16 ***
+## tackles        4.027332   0.015509  259.67   &lt;2e-16 ***
+## frees_for      1.000197   0.033746   29.64   &lt;2e-16 ***
+## frees_against -3.043979   0.032545  -93.53   &lt;2e-16 ***
+## hit_outs       0.996308   0.004781  208.38   &lt;2e-16 ***
+## goals          6.062463   0.036031  168.26   &lt;2e-16 ***
+## behinds        0.953944   0.046672   20.44   &lt;2e-16 ***
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## (Dispersion parameter for gaussian family taken to be 9.10873)
+## 
+##     Null deviance: 6491380  on 9077  degrees of freedom
+## Residual deviance:   82598  on 9068  degrees of freedom
+## AIC: 45830
+## 
+## Number of Fisher Scoring iterations: 2</code></pre>
+<p>Interestingly, the AIC did increase but the residual deviance decreased.</p>
+</div>
+<div id="presenting-results" class="section level3">
+<h3>Presenting Results</h3>
+<p>Next step is to convey the estimates and confidence intervals.</p>
+<pre class="r"><code>library(broom)
+glm3_coef &lt;- tidy(glm3)
+glm3_confint &lt;- glm3_coef %&gt;% 
+  mutate(
+    lb = estimate-1.96*std.error,
+    ub = estimate+1.96*std.error,
+  )
+
+library(ggplot2)
+ggplot(glm3_confint, aes(x=estimate, y=reorder(term, desc(term)))) + 
+  geom_errorbar(aes(xmin=lb, xmax=ub), width=.3) +
+  geom_point() +
+  ggtitle(&quot;The Effect of AFL Statistics on Total Fantasy Points&quot;) + 
+  xlab(&quot;Estimate (95% CI)&quot;) + ylab(&quot;Term&quot;)</code></pre>
+<p><img src="/post/reverse-engineering-fantasy-points-frequentist-method-glm_files/figure-html/unnamed-chunk-13-1.png" width="672" /></p>
+<p>We are 95% confident that the true mean of the term is between these confidence intervals.</p>
+<pre class="r"><code>glm3_confint_clean &lt;- 
+  glm3_confint %&gt;% 
+  mutate(
+    estimate = round(estimate, 2),
+    lb = round(lb, 2),
+    ub = round(ub, 2)
+  ) %&gt;% 
+  select(Term = term, Estimate = estimate, `Lower Bound` = lb, `Upper Bound` = ub)
+
+DT::datatable(glm3_confint_clean, rownames = F, width = 500,
+              caption = &quot;The Effect of AFL Statistics on Total Fantasy Points (95%CI)&quot;, 
+              options = list(dom = &#39;t&#39;))</code></pre>
+<div id="htmlwidget-1" style="width:500px;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","caption":"<caption>The Effect of AFL Statistics on Total Fantasy Points (95%CI)<\/caption>","data":[["(Intercept)","kicks","handballs","marks","tackles","frees_for","frees_against","hit_outs","goals","behinds"],[2.11,3,1.98,2.99,4.03,1,-3.04,1,6.06,0.95],[1.92,2.99,1.97,2.96,4,0.93,-3.11,0.99,5.99,0.86],[2.3,3.02,2,3.02,4.06,1.07,-2.98,1.01,6.13,1.05]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>Term<\/th>\n      <th>Estimate<\/th>\n      <th>Lower Bound<\/th>\n      <th>Upper Bound<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","columnDefs":[{"className":"dt-right","targets":[1,2,3]}],"order":[],"autoWidth":false,"orderClasses":false}},"evals":[],"jsHooks":[]}</script>
+</div>
+</div>
+<div id="conclusion" class="section level2">
+<h2>Conclusion</h2>
+<p>It turns out that Fantasy Points have been made publicly available, which means we can now compare our results to the real deal. (I’ve applied a shift of 2, mainly to illustrate the use of <code>(Intercept)</code> in the model).</p>
+<pre class="r"><code>glm3_confint_true &lt;- glm3_confint %&gt;% 
+  mutate(
+    true_estimate = case_when(
+      term == &quot;kicks&quot; ~ 3,
+      term == &quot;handballs&quot; ~ 2,
+      term == &quot;marks&quot; ~ 3,
+      term == &quot;tackles&quot; ~ 4,
+      term == &quot;frees_for&quot; ~ 1,
+      term == &quot;frees_against&quot; ~ -3,
+      term == &quot;hit_outs&quot; ~ 1,
+      term == &quot;goals&quot; ~ 6,
+      term == &quot;behinds&quot; ~ 1
+    )
+  )
+
+ggplot(glm3_confint_true, aes(x=estimate, y=reorder(term, desc(term)))) +
+  geom_errorbar(aes(xmin=lb, xmax=ub), width=.3) +
+  geom_point() +
+  geom_point(aes(x=true_estimate, y=reorder(term, desc(term))), colour = &#39;red&#39;) +
+  ggtitle(&quot;The Effect of AFL Statistics on Total Fantasy Points&quot;) +
+  xlab(&quot;Estimate (95% CI)&quot;) + ylab(&quot;Term&quot;)</code></pre>
+<p><img src="/post/reverse-engineering-fantasy-points-frequentist-method-glm_files/figure-html/unnamed-chunk-15-1.png" width="672" /></p>
+<p>The red dots represent the true points assigned to each statistic, and we can see that after this process our model correctly identifies the true values, despite the addition of random noise and artificial outliers.</p>
+<p>Make sure to tweet at me <a href="https://twitter.com/crow_data_sci" target="blank">@crow_data_sci</a> about ideas, corrections and clarifications! I’m also planning to do a Bayesian/simulation based regression in <code>brms</code>, that will follow the same data and flow.</p>
+</div>
