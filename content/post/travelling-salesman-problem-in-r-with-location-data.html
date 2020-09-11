@@ -1,0 +1,269 @@
+---
+title: Traveling Salesman Problem in R with Location Data
+author: Liam Crowhurst
+date: '2020-09-10'
+slug: travelling-salesman-problem-in-r-with-location-data
+categories:
+  - AFL Analysis
+  - R Programming
+tags:
+  - R
+banner: 'images/tsp.png'
+description: 'A start to finish implementation of the Travelling Salesman Problem in R, starting with location coordinates, ending with interactive maps!'
+images: []
+menu: ''
+---
+
+<script src="/rmarkdown-libs/htmlwidgets/htmlwidgets.js"></script>
+<script src="/rmarkdown-libs/jquery/jquery.min.js"></script>
+<link href="/rmarkdown-libs/datatables-css/datatables-crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/datatables-binding/datatables.js"></script>
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.min.css" rel="stylesheet" />
+<link href="/rmarkdown-libs/dt-core/css/jquery.dataTables.extra.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/dt-core/js/jquery.dataTables.min.js"></script>
+<link href="/rmarkdown-libs/crosstalk/css/crosstalk.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/crosstalk/js/crosstalk.min.js"></script>
+<link href="/rmarkdown-libs/leaflet/leaflet.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/leaflet/leaflet.js"></script>
+<link href="/rmarkdown-libs/leafletfix/leafletfix.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/Proj4Leaflet/proj4-compressed.js"></script>
+<script src="/rmarkdown-libs/Proj4Leaflet/proj4leaflet.js"></script>
+<link href="/rmarkdown-libs/rstudio_leaflet/rstudio_leaflet.css" rel="stylesheet" />
+<script src="/rmarkdown-libs/leaflet-binding/leaflet.js"></script>
+
+
+<p>Being locked down gave me an idea:</p>
+<blockquote>
+<p>If I could travel, whats the shortest distance to visit all Australian football grounds?</p>
+</blockquote>
+<p>To answer this question, I’m going to be exploring one of the most famous optimisation problems in mathematics: the Traveling Salesman Problem, or a Travelling Footballer Problem.</p>
+<div id="the-data" class="section level1">
+<h1>The data</h1>
+<p>Here’s some data I prepared earlier, 17 venues with corresponding latitude and longitude. These are Australian based venues that have been used in the last 3 years of the AFL regular season.</p>
+<pre class="r"><code>library(dplyr)
+library(tidyr)
+afl_venue_locations &lt;- read.csv(&quot;post_data/afl_venue_locations.csv&quot;)</code></pre>
+<div id="htmlwidget-1" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-1">{"x":{"filter":"none","data":[[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17],["Brunton Ave, Richmond VIC 3002, Australia","Docklands VIC 3008, Australia","War Memorial Dr, North Adelaide SA 5006, Australia","Mulgrave Rd, Westcourt QLD 4870, Australia","Manuka Cir, Griffith ACT 2603, Australia","333 Victoria Park Dr, Burswood WA 6100, Australia","Vulture St, Woolloongabba QLD 4102, Australia","SCG Gate 1, Driver Ave, Moore Park NSW 2021, Australia","15 Derwent St, Bellerive TAS 7018, Australia","370 Moorabool St, South Geelong VIC 3220, Australia","1 Showground Rd, Sydney Olympic Park NSW 2127, Australia","2 Invermay Rd, Invermay TAS 7248, Australia","725 Creswick Rd, Wendouree VIC 3355, Australia","The Gap NT 0870, Australia","Nerang Broadbeach Rd, Carrara QLD 4211, Australia","205 Abala Rd, Marrara NT 0812, Australia","Sporting Dr, Condon QLD 4815, Australia"],[-37.8199669,-37.8190118,-34.9155163,-16.9357526,-35.318133,-31.9511708,-27.4858376,-33.8888789,-42.8772963,-38.1579763,-33.8432512,-41.4260369,-37.5386209,-23.709039,-28.0063121,-12.4004666,-19.3178115],[144.9834493,144.9465764,138.5961146,145.7489988,149.134662,115.8890146,153.0380853,151.2270526,147.3740128,144.3545702,151.0673124,147.1389961,143.8479833,133.8750826,153.3670875,130.8835367,146.7317297],["M.C.G.","Docklands","Adelaide Oval","Cazaly's Stadium","Manuka Oval","Perth Stadium","Gabba","S.C.G.","Bellerive Oval","Kardinia Park","Sydney Showground","York Park","Eureka Stadium","Traeger Park","Carrara","Marrara Oval","Riverway Stadium"]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th>id<\/th>\n      <th>formattedAddress<\/th>\n      <th>latitude<\/th>\n      <th>longitude<\/th>\n      <th>venue<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","ordering":false,"scrollX":true,"scrollY":"400px","pageLength":17,"initComplete":"\n                        function(settings, json) {\n                          $(this.api().table().header()).css({\n                          'font-size': '12px',\n                          });\n                        }\n                    ","columnDefs":[{"className":"dt-right","targets":[0,2,3]}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,17,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'9pt'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'9pt'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'9pt'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'font-size':'9pt'});\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-size':'9pt'});\n}"}},"evals":["options.initComplete","options.rowCallback"],"jsHooks":[]}</script>
+<pre class="r"><code>library(leaflet)
+
+leaflet(data = afl_venue_locations) %&gt;% addTiles() %&gt;%
+  addMarkers(~longitude, ~latitude, popup = ~venue, label = ~venue)</code></pre>
+<div id="htmlwidget-2" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-2">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addMarkers","args":[[-37.8199669,-37.8190118,-34.9155163,-16.9357526,-35.318133,-31.9511708,-27.4858376,-33.8888789,-42.8772963,-38.1579763,-33.8432512,-41.4260369,-37.5386209,-23.709039,-28.0063121,-12.4004666,-19.3178115],[144.9834493,144.9465764,138.5961146,145.7489988,149.134662,115.8890146,153.0380853,151.2270526,147.3740128,144.3545702,151.0673124,147.1389961,143.8479833,133.8750826,153.3670875,130.8835367,146.7317297],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},["M.C.G.","Docklands","Adelaide Oval","Cazaly's Stadium","Manuka Oval","Perth Stadium","Gabba","S.C.G.","Bellerive Oval","Kardinia Park","Sydney Showground","York Park","Eureka Stadium","Traeger Park","Carrara","Marrara Oval","Riverway Stadium"],null,null,null,["M.C.G.","Docklands","Adelaide Oval","Cazaly's Stadium","Manuka Oval","Perth Stadium","Gabba","S.C.G.","Bellerive Oval","Kardinia Park","Sydney Showground","York Park","Eureka Stadium","Traeger Park","Carrara","Marrara Oval","Riverway Stadium"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[-42.8772963,-12.4004666],"lng":[115.8890146,153.3670875]}},"evals":[],"jsHooks":[]}</script>
+<p>Given these 17 locations, and we want to find the shortest path that allows us to visit each of the grounds and finish where we started. To start off we need a distance matrix, a calculation of the distance between each venue. We are going to use the <code>geosphere</code> package with built in functions to calculate distances from the venues’ latitude and longitude coordinates.</p>
+<pre class="r"><code>library(geosphere)
+
+afl_venue_coords &lt;- afl_venue_locations %&gt;% select(longitude, latitude)
+
+distance_matrix &lt;- as.matrix(
+  distm(afl_venue_coords, fun = distHaversine)
+)/1000 #convert metres to kilometres
+
+rownames(distance_matrix) &lt;- afl_venue_locations$venue
+colnames(distance_matrix) &lt;- afl_venue_locations$venue</code></pre>
+<div id="htmlwidget-3" style="width:100%;height:auto;" class="datatables html-widget"></div>
+<script type="application/json" data-for="htmlwidget-3">{"x":{"filter":"none","data":[["M.C.G.","Docklands","Adelaide Oval","Cazaly's Stadium","Manuka Oval","Perth Stadium","Gabba","S.C.G.","Bellerive Oval","Kardinia Park","Sydney Showground","York Park","Eureka Stadium","Traeger Park","Carrara","Marrara Oval","Riverway Stadium"],[0,3,657,2326,464,2724,1375,713,598,67,705,442,105,1893,1343,3157,2067],[3,0,654,2326,467,2721,1376,716,599,64,708,443,102,1891,1345,3156,2067],[657,654,0,2124,960,2130,1602,1165,1166,629,1151,1040,555,1329,1597,2624,1912],[2326,2326,2124,0,2074,3439,1393,1965,2892,2366,1956,2729,2301,1450,1459,1678,285],[464,467,960,2074,0,3090,947,249,855,531,242,702,534,1959,907,3144,1797],[2724,2721,2130,3439,3090,0,3608,3293,3015,2673,3279,2963,2621,1990,3623,2663,3384],[1375,1376,1602,1393,947,3608,0,734,1788,1438,732,1642,1411,1967,66,2854,1114],[713,716,1165,1965,249,3293,734,0,1055,780,16,913,781,2032,686,3158,1682],[598,599,1166,2892,855,3015,1788,1055,0,584,1056,163,665,2469,1741,3746,2623],[67,64,629,2366,531,2673,1438,780,584,0,772,435,82,1891,1407,3163,2110],[705,708,1151,1956,242,3279,732,16,1056,772,0,912,771,2017,686,3144,1673],[442,443,1040,2729,702,2963,1642,913,163,435,912,0,517,2326,1598,3597,2461],[105,102,555,2301,534,2621,1411,781,665,82,771,517,0,1809,1384,3081,2048],[1893,1891,1329,1450,1959,1990,1967,2032,2469,1891,2017,2326,1809,0,2008,1298,1418],[1343,1345,1597,1459,907,3623,66,686,1741,1407,686,1598,1384,2008,0,2912,1180],[3157,3156,2624,1678,3144,2663,2854,3158,3746,3163,3144,3597,3081,1298,2912,0,1862],[2067,2067,1912,285,1797,3384,1114,1682,2623,2110,1673,2461,2048,1418,1180,1862,0]],"container":"<table class=\"display\">\n  <thead>\n    <tr>\n      <th> <\/th>\n      <th>M.C.G.<\/th>\n      <th>Docklands<\/th>\n      <th>Adelaide Oval<\/th>\n      <th>Cazaly's Stadium<\/th>\n      <th>Manuka Oval<\/th>\n      <th>Perth Stadium<\/th>\n      <th>Gabba<\/th>\n      <th>S.C.G.<\/th>\n      <th>Bellerive Oval<\/th>\n      <th>Kardinia Park<\/th>\n      <th>Sydney Showground<\/th>\n      <th>York Park<\/th>\n      <th>Eureka Stadium<\/th>\n      <th>Traeger Park<\/th>\n      <th>Carrara<\/th>\n      <th>Marrara Oval<\/th>\n      <th>Riverway Stadium<\/th>\n    <\/tr>\n  <\/thead>\n<\/table>","options":{"dom":"t","ordering":false,"scrollX":true,"scrollY":"400px","pageLength":17,"initComplete":"\n                        function(settings, json) {\n                          $(this.api().table().header()).css({\n                          'font-size': '10px',\n                          });\n                        }\n                    ","columnDefs":[{"className":"dt-right","targets":[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17]},{"orderable":false,"targets":0}],"order":[],"autoWidth":false,"orderClasses":false,"lengthMenu":[10,17,25,50,100],"rowCallback":"function(row, data) {\nvar value=data[0]; $(this.api().cell(row, 0).node()).css({'font-size':'8pt'});\nvar value=data[1]; $(this.api().cell(row, 1).node()).css({'font-size':'8pt'});\nvar value=data[2]; $(this.api().cell(row, 2).node()).css({'font-size':'8pt'});\nvar value=data[3]; $(this.api().cell(row, 3).node()).css({'font-size':'8pt'});\nvar value=data[4]; $(this.api().cell(row, 4).node()).css({'font-size':'8pt'});\nvar value=data[5]; $(this.api().cell(row, 5).node()).css({'font-size':'8pt'});\nvar value=data[6]; $(this.api().cell(row, 6).node()).css({'font-size':'8pt'});\nvar value=data[7]; $(this.api().cell(row, 7).node()).css({'font-size':'8pt'});\nvar value=data[8]; $(this.api().cell(row, 8).node()).css({'font-size':'8pt'});\nvar value=data[9]; $(this.api().cell(row, 9).node()).css({'font-size':'8pt'});\nvar value=data[10]; $(this.api().cell(row, 10).node()).css({'font-size':'8pt'});\nvar value=data[11]; $(this.api().cell(row, 11).node()).css({'font-size':'8pt'});\nvar value=data[12]; $(this.api().cell(row, 12).node()).css({'font-size':'8pt'});\nvar value=data[13]; $(this.api().cell(row, 13).node()).css({'font-size':'8pt'});\nvar value=data[14]; $(this.api().cell(row, 14).node()).css({'font-size':'8pt'});\nvar value=data[15]; $(this.api().cell(row, 15).node()).css({'font-size':'8pt'});\nvar value=data[16]; $(this.api().cell(row, 16).node()).css({'font-size':'8pt'});\nvar value=data[17]; $(this.api().cell(row, 17).node()).css({'font-size':'8pt'});\n}"}},"evals":["options.initComplete","options.rowCallback"],"jsHooks":[]}</script>
+<p>Our distance matrix has been computed. You’ll notice that the diagonals are all 0, which makes sense given its the same location. Also the matrix is symmetrical along the diagonal: Walking from the MCG to Docklands is the same as the return journey. Please note that this is a “As the crow flies” implementation, a straight line from venue to venue.</p>
+<p>I chose to use the <code>ompr</code> implementation of the TSP, which I found to be pretty stable and quick*. We will also need the development version of <code>ompr</code> to get access to the vectorised version of the algorithm.</p>
+<p>*I haven’t tried any others.</p>
+<pre class="r"><code>devtools::install_github(&quot;dirkschumacher/ompr&quot;)
+devtools::install_github(&quot;dirkschumacher/ompr.roi&quot;) #or cran version higher than 0.8.0.9
+install.packages(&quot;ROI.plugin.glpk&quot;)</code></pre>
+<pre class="r"><code>library(ompr)
+#specify the dimensions of the distance matrix
+n &lt;- length(afl_venue_locations$id)
+
+#create a distance extraction function
+dist_fun &lt;- function(i, j) {
+    vapply(seq_along(i), function(k) distance_matrix[i[k], j[k]], numeric(1L))
+}
+
+model &lt;- MILPModel() %&gt;%
+    # we create a variable that is 1 iff we travel from city i to j
+    add_variable(x[i, j], i = 1:n, j = 1:n, 
+                 type = &quot;integer&quot;, lb = 0, ub = 1) %&gt;%
+    
+    # a helper variable for the MTZ formulation of the tsp
+    add_variable(u[i], i = 1:n, lb = 1, ub = n) %&gt;% 
+    
+    # minimize travel distance
+    set_objective(sum_expr(colwise(dist_fun(i, j)) * x[i, j], i = 1:n, j = 1:n), &quot;min&quot;) %&gt;%
+    
+    # you cannot go to the same city
+    set_bounds(x[i, i], ub = 0, i = 1:n) %&gt;%
+    
+    # leave each city
+    add_constraint(sum_expr(x[i, j], j = 1:n) == 1, i = 1:n) %&gt;%
+    
+    # visit each city
+    add_constraint(sum_expr(x[i, j], i = 1:n) == 1, j = 1:n) %&gt;%
+    
+    # ensure no subtours (arc constraints)
+    add_constraint(u[i] &gt;= 2, i = 2:n) %&gt;% 
+    add_constraint(u[i] - u[j] + 1 &lt;= (n - 1) * (1 - x[i, j]), i = 2:n, j = 2:n)
+model</code></pre>
+<pre><code>## Mixed integer linear optimization problem
+## Variables:
+##   Continuous: 17 
+##   Integer: 289 
+##   Binary: 0 
+## Model sense: minimize 
+## Constraints: 306</code></pre>
+<p>The model has been built, now lets solve it.</p>
+<pre class="r"><code>library(ompr.roi)
+library(ROI.plugin.glpk)
+
+result &lt;- solve_model(model, with_ROI(solver = &quot;glpk&quot;, verbose = TRUE))</code></pre>
+<pre><code>## &lt;SOLVER MSG&gt;  ----
+## GLPK Simplex Optimizer, v4.47
+## 306 rows, 306 columns, 1330 non-zeros
+##       0: obj =  0.000000000e+000  infeas = 5.000e+001 (34)
+## *    54: obj =  2.453647438e+004  infeas = 0.000e+000 (1)
+## *   128: obj =  8.936395032e+003  infeas = 0.000e+000 (1)
+## OPTIMAL SOLUTION FOUND
+## GLPK Integer Optimizer, v4.47
+## 306 rows, 306 columns, 1330 non-zeros
+## 289 integer variables, 272 of which are binary
+## Integer optimization begins...
+## +   128: mip =     not found yet &gt;=              -inf        (1; 0)
+## +   877: &gt;&gt;&gt;&gt;&gt;  1.603882389e+004 &gt;=  9.723428934e+003  39.4% (82; 1)
+## +  1144: &gt;&gt;&gt;&gt;&gt;  1.507632658e+004 &gt;=  9.723917868e+003  35.5% (109; 5)
+## +  2068: &gt;&gt;&gt;&gt;&gt;  1.507157320e+004 &gt;=  1.051733544e+004  30.2% (158; 31)
+## +  2215: &gt;&gt;&gt;&gt;&gt;  1.167150030e+004 &gt;=  1.069026063e+004   8.4% (163; 32)
+## +  3581: &gt;&gt;&gt;&gt;&gt;  1.166830513e+004 &gt;=  1.160505429e+004   0.5% (11; 353)
+## +  3671: mip =  1.166830513e+004 &gt;=     tree is empty   0.0% (0; 399)
+## INTEGER OPTIMAL SOLUTION FOUND
+## &lt;!SOLVER MSG&gt; ----</code></pre>
+<pre class="r"><code>result_val &lt;- round(objective_value(result), 2)
+result_val</code></pre>
+<pre><code>## [1] 11668.31</code></pre>
+<p>Nice! The shortest distance travelled to visit all venues is 11668km.</p>
+<p>How does this route look on a map?</p>
+<pre class="r"><code>solution &lt;- get_solution(result, x[i, j]) %&gt;% 
+    filter(value &gt; 0)
+
+paths &lt;- select(solution, i, j) %&gt;% 
+    rename(from = i, to = j) %&gt;% 
+    mutate(trip_id = row_number()) %&gt;% 
+    inner_join(afl_venue_locations, by = c(&quot;from&quot; = &quot;id&quot;))
+
+paths_leaflet &lt;- paths[1,]
+paths_row &lt;- paths[1,]
+
+for (i in 1:n) {
+    paths_row &lt;- paths %&gt;% filter(from == paths_row$to[1])
+    
+    paths_leaflet &lt;- rbind(paths_leaflet, paths_row)
+}
+
+leaflet() %&gt;% 
+    addTiles() %&gt;%
+    addMarkers(data = afl_venue_locations, ~longitude, ~latitude, popup = ~venue, label = ~venue) %&gt;% 
+    addPolylines(data = paths_leaflet, ~longitude, ~latitude, weight = 2)</code></pre>
+<div id="htmlwidget-4" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-4">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addMarkers","args":[[-37.8199669,-37.8190118,-34.9155163,-16.9357526,-35.318133,-31.9511708,-27.4858376,-33.8888789,-42.8772963,-38.1579763,-33.8432512,-41.4260369,-37.5386209,-23.709039,-28.0063121,-12.4004666,-19.3178115],[144.9834493,144.9465764,138.5961146,145.7489988,149.134662,115.8890146,153.0380853,151.2270526,147.3740128,144.3545702,151.0673124,147.1389961,143.8479833,133.8750826,153.3670875,130.8835367,146.7317297],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},["M.C.G.","Docklands","Adelaide Oval","Cazaly's Stadium","Manuka Oval","Perth Stadium","Gabba","S.C.G.","Bellerive Oval","Kardinia Park","Sydney Showground","York Park","Eureka Stadium","Traeger Park","Carrara","Marrara Oval","Riverway Stadium"],null,null,null,["M.C.G.","Docklands","Adelaide Oval","Cazaly's Stadium","Manuka Oval","Perth Stadium","Gabba","S.C.G.","Bellerive Oval","Kardinia Park","Sydney Showground","York Park","Eureka Stadium","Traeger Park","Carrara","Marrara Oval","Riverway Stadium"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[144.9465764,144.9834493,147.1389961,147.3740128,149.134662,151.0673124,151.2270526,153.3670875,153.0380853,146.7317297,145.7489988,130.8835367,133.8750826,115.8890146,138.5961146,143.8479833,144.3545702,144.9465764],"lat":[-37.8190118,-37.8199669,-41.4260369,-42.8772963,-35.318133,-33.8432512,-33.8888789,-28.0063121,-27.4858376,-19.3178115,-16.9357526,-12.4004666,-23.709039,-31.9511708,-34.9155163,-37.5386209,-38.1579763,-37.8190118]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#03F","weight":2,"opacity":0.5,"fill":false,"fillColor":"#03F","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[-42.8772963,-12.4004666],"lng":[115.8890146,153.3670875]}},"evals":[],"jsHooks":[]}</script>
+<p>Seems pretty intuitive, essentially a big loop around Australia.</p>
+<div id="maths" class="section level3">
+<h3>Maths</h3>
+<p>How many combinations were there? Lets start with a simple case of 4 locations and the following path, ending where we started.</p>
+<p><span class="math inline">\(A \rightarrow B \rightarrow C \rightarrow D \rightarrow A\)</span></p>
+<p>is the same as</p>
+<p><span class="math inline">\(B \rightarrow C \rightarrow D \rightarrow A \rightarrow B\)</span></p>
+<p>This means the “starting venue” is already decided, we can just apply a rotation to the cycle. We can also travel in either direction (thanks to a symmetric matrix).</p>
+<p><span class="math inline">\(A \rightarrow B \rightarrow C \rightarrow D \rightarrow A\)</span></p>
+<p>is the same as</p>
+<p><span class="math inline">\(A \rightarrow D \rightarrow C \rightarrow B \rightarrow A\)</span></p>
+<p>which means we can remove half of the possible cycles, which are just reflections of each other.</p>
+<p>This gives us the resulting formula:</p>
+<p><span class="math display">\[ 
+\texttt{NComb} = \dfrac{(n-1)!}{2}\\
+n=17,
+\therefore \texttt{NComb} = \dfrac{(17-1)!}{2} = 10,461,394,944,000
+\]</span></p>
+<p>To brute force a 17 venue TSP, 10 trillion combinations would need to be evaluated, even when removing cycling and reflections, and the <code>ompr</code> R implementation solved it in about 1 second! Amazing!</p>
+</div>
+<div id="bonus-round" class="section level3">
+<h3>Bonus Round</h3>
+<p>What’s the maximum distance? Easy. Replace the objective from <code>min</code> to <code>max</code>.</p>
+<pre class="r"><code>model_max &lt;- MILPModel() %&gt;%
+    # we create a variable that is 1 iff we travel from city i to j
+    add_variable(x[i, j], i = 1:n, j = 1:n, 
+                 type = &quot;integer&quot;, lb = 0, ub = 1) %&gt;%
+    
+    # a helper variable for the MTZ formulation of the tsp
+    add_variable(u[i], i = 1:n, lb = 1, ub = n) %&gt;% 
+    
+    # maximise travel distance
+    set_objective(sum_expr(colwise(dist_fun(i, j)) * x[i, j], i = 1:n, j = 1:n), &quot;max&quot;) %&gt;%
+    
+    # you cannot go to the same city
+    set_bounds(x[i, i], ub = 0, i = 1:n) %&gt;%
+    
+    # leave each city
+    add_constraint(sum_expr(x[i, j], j = 1:n) == 1, i = 1:n) %&gt;%
+    
+    # visit each city
+    add_constraint(sum_expr(x[i, j], i = 1:n) == 1, j = 1:n) %&gt;%
+    
+    # ensure no subtours (arc constraints)
+    add_constraint(u[i] &gt;= 2, i = 2:n) %&gt;% 
+    add_constraint(u[i] - u[j] + 1 &lt;= (n - 1) * (1 - x[i, j]), i = 2:n, j = 2:n)
+model_max</code></pre>
+<pre><code>## Mixed integer linear optimization problem
+## Variables:
+##   Continuous: 17 
+##   Integer: 289 
+##   Binary: 0 
+## Model sense: maximize 
+## Constraints: 306</code></pre>
+<pre class="r"><code>result_max &lt;- solve_model(model_max, with_ROI(solver = &quot;glpk&quot;, verbose = TRUE))</code></pre>
+<pre><code>## &lt;SOLVER MSG&gt;  ----
+## GLPK Simplex Optimizer, v4.47
+## 306 rows, 306 columns, 1330 non-zeros
+##       0: obj =  0.000000000e+000  infeas = 5.000e+001 (34)
+## *    54: obj =  2.453647438e+004  infeas = 0.000e+000 (1)
+## *   166: obj =  3.605414246e+004  infeas = 0.000e+000 (1)
+## OPTIMAL SOLUTION FOUND
+## GLPK Integer Optimizer, v4.47
+## 306 rows, 306 columns, 1330 non-zeros
+## 289 integer variables, 272 of which are binary
+## Integer optimization begins...
+## +   166: mip =     not found yet &lt;=              +inf        (1; 0)
+## +   181: &gt;&gt;&gt;&gt;&gt;  3.605414246e+004 &lt;=  3.605414246e+004 &lt; 0.1% (2; 0)
+## +   181: mip =  3.605414246e+004 &lt;=     tree is empty   0.0% (0; 3)
+## INTEGER OPTIMAL SOLUTION FOUND
+## &lt;!SOLVER MSG&gt; ----</code></pre>
+<pre class="r"><code>result_val_max &lt;- round(objective_value(result_max))
+
+paste0(&#39;Total distance: &#39;,result_val_max,&#39;km&#39;)</code></pre>
+<pre><code>## [1] &quot;Total distance: 36054km&quot;</code></pre>
+<pre class="r"><code>solution_max &lt;- get_solution(result_max, x[i, j]) %&gt;% 
+    filter(value &gt; 0)
+
+paths_max &lt;- select(solution_max, i, j) %&gt;% 
+    rename(from = i, to = j) %&gt;% 
+    mutate(trip_id = row_number()) %&gt;% 
+    inner_join(afl_venue_locations, by = c(&quot;from&quot; = &quot;id&quot;))
+
+paths_max_leaflet &lt;- paths_max[1,]
+paths_max_row &lt;- paths_max[1,]
+
+for (i in 1:n) {
+    paths_max_row &lt;- paths_max %&gt;% filter(from == paths_max_row$to[1])
+    
+    paths_max_leaflet &lt;- rbind(paths_max_leaflet, paths_max_row)
+}
+
+leaflet() %&gt;% 
+    addTiles() %&gt;%
+    addMarkers(data = afl_venue_locations, ~longitude, ~latitude, popup = ~venue, label = ~venue) %&gt;% 
+    addPolylines(data = paths_max_leaflet, ~longitude, ~latitude, weight = 2)</code></pre>
+<div id="htmlwidget-5" style="width:672px;height:480px;" class="leaflet html-widget"></div>
+<script type="application/json" data-for="htmlwidget-5">{"x":{"options":{"crs":{"crsClass":"L.CRS.EPSG3857","code":null,"proj4def":null,"projectedBounds":null,"options":{}}},"calls":[{"method":"addTiles","args":["//{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",null,null,{"minZoom":0,"maxZoom":18,"tileSize":256,"subdomains":"abc","errorTileUrl":"","tms":false,"noWrap":false,"zoomOffset":0,"zoomReverse":false,"opacity":1,"zIndex":1,"detectRetina":false,"attribution":"&copy; <a href=\"http://openstreetmap.org\">OpenStreetMap<\/a> contributors, <a href=\"http://creativecommons.org/licenses/by-sa/2.0/\">CC-BY-SA<\/a>"}]},{"method":"addMarkers","args":[[-37.8199669,-37.8190118,-34.9155163,-16.9357526,-35.318133,-31.9511708,-27.4858376,-33.8888789,-42.8772963,-38.1579763,-33.8432512,-41.4260369,-37.5386209,-23.709039,-28.0063121,-12.4004666,-19.3178115],[144.9834493,144.9465764,138.5961146,145.7489988,149.134662,115.8890146,153.0380853,151.2270526,147.3740128,144.3545702,151.0673124,147.1389961,143.8479833,133.8750826,153.3670875,130.8835367,146.7317297],null,null,null,{"interactive":true,"draggable":false,"keyboard":true,"title":"","alt":"","zIndexOffset":0,"opacity":1,"riseOnHover":false,"riseOffset":250},["M.C.G.","Docklands","Adelaide Oval","Cazaly's Stadium","Manuka Oval","Perth Stadium","Gabba","S.C.G.","Bellerive Oval","Kardinia Park","Sydney Showground","York Park","Eureka Stadium","Traeger Park","Carrara","Marrara Oval","Riverway Stadium"],null,null,null,["M.C.G.","Docklands","Adelaide Oval","Cazaly's Stadium","Manuka Oval","Perth Stadium","Gabba","S.C.G.","Bellerive Oval","Kardinia Park","Sydney Showground","York Park","Eureka Stadium","Traeger Park","Carrara","Marrara Oval","Riverway Stadium"],{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]},{"method":"addPolylines","args":[[[[{"lng":[145.7489988,144.9834493,146.7317297,144.9465764,153.0380853,144.3545702,153.3670875,143.8479833,151.0673124,138.5961146,151.2270526,115.8890146,149.134662,133.8750826,147.1389961,130.8835367,147.3740128,145.7489988],"lat":[-16.9357526,-37.8199669,-19.3178115,-37.8190118,-27.4858376,-38.1579763,-28.0063121,-37.5386209,-33.8432512,-34.9155163,-33.8888789,-31.9511708,-35.318133,-23.709039,-41.4260369,-12.4004666,-42.8772963,-16.9357526]}]]],null,null,{"interactive":true,"className":"","stroke":true,"color":"#03F","weight":2,"opacity":0.5,"fill":false,"fillColor":"#03F","fillOpacity":0.2,"smoothFactor":1,"noClip":false},null,null,null,{"interactive":false,"permanent":false,"direction":"auto","opacity":1,"offset":[0,0],"textsize":"10px","textOnly":false,"className":"","sticky":true},null]}],"limits":{"lat":[-42.8772963,-12.4004666],"lng":[115.8890146,153.3670875]}},"evals":[],"jsHooks":[]}</script>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
+<p>Thanks for making it this far, you can check out the script I used to generate this analysis <a href="https://github.com/liam-crow/stats-blog/tree/master/content/post" target="blank">here</a>. You can ask me questions about analysis at my twitter <a href="https://twitter.com/crow_data_sci" target="blank">@crow_data_sci</a>.</p>
+</div>
+</div>

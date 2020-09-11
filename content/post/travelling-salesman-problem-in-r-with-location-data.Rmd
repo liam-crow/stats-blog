@@ -1,0 +1,268 @@
+---
+title: Traveling Salesman Problem in R with Location Data
+author: Liam Crowhurst
+date: '2020-09-10'
+slug: travelling-salesman-problem-in-r-with-location-data
+categories:
+  - AFL Analysis
+  - R Programming
+tags:
+  - R
+banner: 'images/tsp.png'
+description: 'A start to finish implementation of the Travelling Salesman Problem in R, starting with location coordinates, ending with interactive maps!'
+images: []
+menu: ''
+---
+
+Being locked down gave me an idea:
+
+> If I could travel, whats the shortest distance to visit all Australian football grounds?
+
+To answer this question, I'm going to be exploring one of the most famous optimisation problems in mathematics: the Traveling Salesman Problem, or a Travelling Footballer Problem.
+
+# The data
+
+Here's some data I prepared earlier, 17 venues with corresponding latitude and longitude. These are Australian based venues that have been used in the last 3 years of the AFL regular season.
+
+```{r echo=F}
+options(scipen=999)
+```
+
+```{r message=F, warning=F}
+library(dplyr)
+library(tidyr)
+afl_venue_locations <- read.csv("post_data/afl_venue_locations.csv")
+```
+
+```{r echo=F}
+afl_venue_locations %>% 
+  DT::datatable(rownames=F, options = list(dom='t',ordering=F,scrollX=T,scrollY='400px',pageLength = 17,initComplete = DT::JS("
+                        function(settings, json) {
+                          $(this.api().table().header()).css({
+                          'font-size': '12px',
+                          });
+                        }
+                    "))) %>%
+  DT::formatStyle(columns = colnames(.$x$data), fontSize = '9pt')
+```
+
+```{r}
+library(leaflet)
+
+leaflet(data = afl_venue_locations) %>% addTiles() %>%
+  addMarkers(~longitude, ~latitude, popup = ~venue, label = ~venue)
+```
+
+Given these 17 locations, and we want to find the shortest path that allows us to visit each of the grounds and finish where we started. To start off we need a distance matrix, a calculation of the distance between each venue. We are going to use the `geosphere` package with built in functions to calculate distances from the venues' latitude and longitude coordinates.
+
+
+```{r message=F}
+library(geosphere)
+
+afl_venue_coords <- afl_venue_locations %>% select(longitude, latitude)
+
+distance_matrix <- as.matrix(
+  distm(afl_venue_coords, fun = distHaversine)
+)/1000 #convert metres to kilometres
+
+rownames(distance_matrix) <- afl_venue_locations$venue
+colnames(distance_matrix) <- afl_venue_locations$venue
+```
+
+```{r echo=F}
+round(distance_matrix) %>% 
+  DT::datatable(options = list(dom='t',ordering=F,scrollX=T,scrollY='400px',pageLength = 17,initComplete = DT::JS("
+                        function(settings, json) {
+                          $(this.api().table().header()).css({
+                          'font-size': '10px',
+                          });
+                        }
+                    "))) %>%
+  DT::formatStyle(columns = colnames(.$x$data), fontSize = '8pt')
+```
+
+Our distance matrix has been computed. You'll notice that the diagonals are all 0, which makes sense given its the same location. Also the matrix is symmetrical along the diagonal: Walking from the MCG to Docklands is the same as the return journey. Please note that this is a "As the crow flies" implementation, a straight line from venue to venue.
+
+I chose to use the `ompr` implementation of the TSP, which I found to be pretty stable and quick*. We will also need the development version of `ompr` to get access to the vectorised version of the algorithm.
+
+*I haven't tried any others.
+
+```{r eval=F}
+devtools::install_github("dirkschumacher/ompr")
+devtools::install_github("dirkschumacher/ompr.roi") #or cran version higher than 0.8.0.9
+install.packages("ROI.plugin.glpk")
+```
+
+```{r}
+library(ompr)
+#specify the dimensions of the distance matrix
+n <- length(afl_venue_locations$id)
+
+#create a distance extraction function
+dist_fun <- function(i, j) {
+    vapply(seq_along(i), function(k) distance_matrix[i[k], j[k]], numeric(1L))
+}
+
+model <- MILPModel() %>%
+    # we create a variable that is 1 iff we travel from city i to j
+    add_variable(x[i, j], i = 1:n, j = 1:n, 
+                 type = "integer", lb = 0, ub = 1) %>%
+    
+    # a helper variable for the MTZ formulation of the tsp
+    add_variable(u[i], i = 1:n, lb = 1, ub = n) %>% 
+    
+    # minimize travel distance
+    set_objective(sum_expr(colwise(dist_fun(i, j)) * x[i, j], i = 1:n, j = 1:n), "min") %>%
+    
+    # you cannot go to the same city
+    set_bounds(x[i, i], ub = 0, i = 1:n) %>%
+    
+    # leave each city
+    add_constraint(sum_expr(x[i, j], j = 1:n) == 1, i = 1:n) %>%
+    
+    # visit each city
+    add_constraint(sum_expr(x[i, j], i = 1:n) == 1, j = 1:n) %>%
+    
+    # ensure no subtours (arc constraints)
+    add_constraint(u[i] >= 2, i = 2:n) %>% 
+    add_constraint(u[i] - u[j] + 1 <= (n - 1) * (1 - x[i, j]), i = 2:n, j = 2:n)
+model
+```
+
+The model has been built, now lets solve it.
+
+```{r}
+library(ompr.roi)
+library(ROI.plugin.glpk)
+
+result <- solve_model(model, with_ROI(solver = "glpk", verbose = TRUE))
+
+result_val <- round(objective_value(result), 2)
+result_val
+```
+
+Nice! The shortest distance travelled to visit all venues is `r round(result_val)`km.
+
+How does this route look on a map?
+
+```{r}
+solution <- get_solution(result, x[i, j]) %>% 
+    filter(value > 0)
+
+paths <- select(solution, i, j) %>% 
+    rename(from = i, to = j) %>% 
+    mutate(trip_id = row_number()) %>% 
+    inner_join(afl_venue_locations, by = c("from" = "id"))
+
+paths_leaflet <- paths[1,]
+paths_row <- paths[1,]
+
+for (i in 1:n) {
+    paths_row <- paths %>% filter(from == paths_row$to[1])
+    
+    paths_leaflet <- rbind(paths_leaflet, paths_row)
+}
+
+leaflet() %>% 
+    addTiles() %>%
+    addMarkers(data = afl_venue_locations, ~longitude, ~latitude, popup = ~venue, label = ~venue) %>% 
+    addPolylines(data = paths_leaflet, ~longitude, ~latitude, weight = 2)
+
+```
+
+Seems pretty intuitive, essentially a big loop around Australia.
+
+### Maths
+
+How many combinations were there? Lets start with a simple case of 4 locations and the following path, ending where we started.
+
+$A \rightarrow B \rightarrow C \rightarrow D \rightarrow A$
+
+is the same as 
+
+$B \rightarrow C \rightarrow D \rightarrow A \rightarrow B$
+
+This means the "starting venue" is already decided, we can just apply a rotation to the cycle. We can also travel in either direction (thanks to a symmetric matrix).
+
+$A \rightarrow B \rightarrow C \rightarrow D \rightarrow A$
+
+is the same as
+
+$A \rightarrow D \rightarrow C \rightarrow B \rightarrow A$
+
+which means we can remove half of the possible cycles, which are just reflections of each other.
+
+This gives us the resulting formula:
+
+$$ 
+\texttt{NComb} = \dfrac{(n-1)!}{2}\\
+n=17,
+\therefore \texttt{NComb} = \dfrac{(17-1)!}{2} = 10,461,394,944,000
+$$
+
+To brute force a 17 venue TSP, 10 trillion combinations would need to be evaluated, even when removing cycling and reflections, and the `ompr` R implementation solved it in about 1 second! Amazing!
+
+### Bonus Round
+
+What's the maximum distance? Easy. Replace the objective from `min` to `max`.
+
+```{r}
+model_max <- MILPModel() %>%
+    # we create a variable that is 1 iff we travel from city i to j
+    add_variable(x[i, j], i = 1:n, j = 1:n, 
+                 type = "integer", lb = 0, ub = 1) %>%
+    
+    # a helper variable for the MTZ formulation of the tsp
+    add_variable(u[i], i = 1:n, lb = 1, ub = n) %>% 
+    
+    # maximise travel distance
+    set_objective(sum_expr(colwise(dist_fun(i, j)) * x[i, j], i = 1:n, j = 1:n), "max") %>%
+    
+    # you cannot go to the same city
+    set_bounds(x[i, i], ub = 0, i = 1:n) %>%
+    
+    # leave each city
+    add_constraint(sum_expr(x[i, j], j = 1:n) == 1, i = 1:n) %>%
+    
+    # visit each city
+    add_constraint(sum_expr(x[i, j], i = 1:n) == 1, j = 1:n) %>%
+    
+    # ensure no subtours (arc constraints)
+    add_constraint(u[i] >= 2, i = 2:n) %>% 
+    add_constraint(u[i] - u[j] + 1 <= (n - 1) * (1 - x[i, j]), i = 2:n, j = 2:n)
+model_max
+
+result_max <- solve_model(model_max, with_ROI(solver = "glpk", verbose = TRUE))
+
+result_val_max <- round(objective_value(result_max))
+
+paste0('Total distance: ',result_val_max,'km')
+
+solution_max <- get_solution(result_max, x[i, j]) %>% 
+    filter(value > 0)
+
+paths_max <- select(solution_max, i, j) %>% 
+    rename(from = i, to = j) %>% 
+    mutate(trip_id = row_number()) %>% 
+    inner_join(afl_venue_locations, by = c("from" = "id"))
+
+paths_max_leaflet <- paths_max[1,]
+paths_max_row <- paths_max[1,]
+
+for (i in 1:n) {
+    paths_max_row <- paths_max %>% filter(from == paths_max_row$to[1])
+    
+    paths_max_leaflet <- rbind(paths_max_leaflet, paths_max_row)
+}
+
+leaflet() %>% 
+    addTiles() %>%
+    addMarkers(data = afl_venue_locations, ~longitude, ~latitude, popup = ~venue, label = ~venue) %>% 
+    addPolylines(data = paths_max_leaflet, ~longitude, ~latitude, weight = 2)
+
+```
+
+### Conclusion
+
+Thanks for making it this far, you can check out the script I used to generate this analysis [here](https://github.com/liam-crow/stats-blog/tree/master/content/post){target="blank"}. You can ask me questions about analysis at my twitter [\@crow_data_sci](https://twitter.com/crow_data_sci){target="blank"}.
+

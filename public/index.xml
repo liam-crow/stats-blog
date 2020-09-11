@@ -6,10 +6,22 @@
     <description>Recent content on Crow Data Science</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 04 Aug 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 10 Sep 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Traveling Salesman Problem in R with Location Data</title>
+      <link>/travelling-salesman-problem-in-r-with-location-data/</link>
+      <pubDate>Thu, 10 Sep 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/travelling-salesman-problem-in-r-with-location-data/</guid>
+      <description>Being locked down gave me an idea:
+If I could travel, whats the shortest distance to visit all Australian football grounds?
+To answer this question, I’m going to be exploring one of the most famous optimisation problems in mathematics: the Traveling Salesman Problem, or a Travelling Footballer Problem.
+The dataHere’s some data I prepared earlier, 17 venues with corresponding latitude and longitude.</description>
+    </item>
     
     <item>
       <title>Reverse Engineering Fantasy Points: Frequentist Method with Generalised Linear Models</title>
