@@ -55,6 +55,7 @@ leaflet(data = afl_venue_locations) %>% addTiles() %>%
 
 Given these 17 locations, and we want to find the shortest path that allows us to visit each of the grounds and finish where we started. To start off we need a distance matrix, a calculation of the distance between each venue. We are going to use the `geosphere` package with built in functions to calculate distances from the venues' latitude and longitude coordinates.
 
+# The data prep
 
 ```{r message=F}
 library(geosphere)
@@ -83,12 +84,14 @@ round(distance_matrix) %>%
 
 Our distance matrix has been computed. You'll notice that the diagonals are all 0, which makes sense given its the same location. Also the matrix is symmetrical along the diagonal: Walking from the MCG to Docklands is the same as the return journey. Please note that this is a "As the crow flies" implementation, a straight line from venue to venue.
 
+# Model Building
+
 I chose to use the `ompr` implementation of the TSP, which I found to be pretty stable and quick*. We will also need the development version of `ompr` to get access to the vectorised version of the algorithm.
 
 *I haven't tried any others.
 
 ```{r eval=F}
-devtools::install_github("dirkschumacher/ompr")
+install.packages("ompr")
 devtools::install_github("dirkschumacher/ompr.roi") #or cran version higher than 0.8.0.9
 install.packages("ROI.plugin.glpk")
 ```
@@ -131,6 +134,8 @@ model
 
 The model has been built, now lets solve it.
 
+#Solving the model
+
 ```{r}
 library(ompr.roi)
 library(ROI.plugin.glpk)
@@ -142,6 +147,8 @@ result_val
 ```
 
 Nice! The shortest distance travelled to visit all venues is `r round(result_val)`km.
+
+# Results
 
 How does this route look on a map?
 
@@ -172,7 +179,7 @@ leaflet() %>%
 
 Seems pretty intuitive, essentially a big loop around Australia.
 
-### Maths
+### Maths behind the TSP
 
 How many combinations were there? Lets start with a simple case of 4 locations and the following path, ending where we started.
 
@@ -262,7 +269,10 @@ leaflet() %>%
 
 ```
 
-### Conclusion
+Lots of criss-crossing paths. Imagine travelling from Canberra to Sydney via Perth.
+
+# Conclusion
 
 Thanks for making it this far, you can check out the script I used to generate this analysis [here](https://github.com/liam-crow/stats-blog/tree/master/content/post){target="blank"}. You can ask me questions about analysis at my twitter [\@crow_data_sci](https://twitter.com/crow_data_sci){target="blank"}.
 
+Make sure to check out `ompr` on [github](https://dirkschumacher.github.io/ompr/){target="blank"} and follow the creator of this package on twitter, [\@dirk_sch](https://twitter.com/dirk_sch){target="blank"}.
