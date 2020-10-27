@@ -3,37 +3,57 @@
   xmlns:xhtml="http://www.w3.org/1999/xhtml">
   
   <url>
+    <loc>/afl-analytics-data-r-part-2/</loc>
+    <lastmod>2020-10-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/categories/afl-data-tutorial/</loc>
+    <lastmod>2020-10-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/categories/</loc>
+    <lastmod>2020-10-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/</loc>
+    <lastmod>2020-10-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/introduction-to-r/</loc>
+    <lastmod>2020-10-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/post/</loc>
+    <lastmod>2020-10-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/r/</loc>
+    <lastmod>2020-10-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/</loc>
+    <lastmod>2020-10-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
+    <loc>/tags/useless-afl-stats/</loc>
+    <lastmod>2020-10-27T00:00:00+00:00</lastmod>
+  </url>
+  
+  <url>
     <loc>/categories/afl-analysis/</loc>
     <lastmod>2020-09-10T00:00:00+00:00</lastmod>
   </url>
   
   <url>
-    <loc>/categories/</loc>
-    <lastmod>2020-09-10T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/</loc>
-    <lastmod>2020-09-10T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/post/</loc>
-    <lastmod>2020-09-10T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/r/</loc>
-    <lastmod>2020-09-10T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/categories/r-programming/</loc>
-    <lastmod>2020-09-10T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/</loc>
     <lastmod>2020-09-10T00:00:00+00:00</lastmod>
   </url>
   
@@ -53,11 +73,6 @@
   </url>
   
   <url>
-    <loc>/tags/useless-afl-stats/</loc>
-    <lastmod>2020-07-31T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/useless-afl-stats-dashboard/</loc>
     <lastmod>2020-07-31T00:00:00+00:00</lastmod>
   </url>
@@ -68,17 +83,7 @@
   </url>
   
   <url>
-    <loc>/categories/afl-data-tutorial/</loc>
-    <lastmod>2020-07-16T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
     <loc>/introduction-afl-analytics-data-r/</loc>
-    <lastmod>2020-07-16T00:00:00+00:00</lastmod>
-  </url>
-  
-  <url>
-    <loc>/tags/introduction-to-r/</loc>
     <lastmod>2020-07-16T00:00:00+00:00</lastmod>
   </url>
   

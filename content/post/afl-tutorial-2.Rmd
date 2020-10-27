@@ -1,0 +1,238 @@
+---
+title: "AFL Analytics with Useless AFL Stats - Part 2"
+author: Liam Crowhurst
+date: '2020-10-27'
+slug: afl-analytics-data-R-part-2
+categories:
+  - AFL Data Tutorial
+tags:
+  - R
+  - Useless AFL Stats
+  - Introduction to R
+banner: 'images/tutorial2.png'
+description: 'Part 2 of a beginners guide to AFL analytics and programming in R!'
+images: []
+menu: ''
+---
+
+Welcome to Part 2 of a beginners guide to AFL analytics and programming in R! This post will be following directly on from my first post, which you can access [here](https://www.crowdatascience.com/introduction-afl-analytics-data-r/){target="blank"}. It covers the main points of installing R and RStudio and loading AFL data into your workspace.
+
+If you have any questions during this tutorial, you can tweet at me [\@crow_data_sci](https://twitter.com/crow_data_sci){target="blank"}. If you've got a useless stat, feel free to message at us [Useless AFL Stats](https://www.facebook.com/uselessaflstats){target="blank"}.
+
+# Starting a new script
+
+Upon opening RStudio, check that you are in the right project. In the top left corner, there is a drop down menu, and choose the `AFL_scripts` project. The name might be named differently, or you can create a new project by following the top default options.
+
+Now that we are in the right directory, create a new R script from the File -> New File -> R Script in the top left corner. You should now see the script open, and you can save it and name it accordingly.
+
+# Loading pacakges and AFL tables data
+
+We are going to load in the 2020 AFL season from afltables using the fantastic `fitzRoy` package. Assuming you followed Part 1, these packages should already be installed. If not, use `install.packages('dplyr')` for a first time install for each package.
+
+```{r echo=F, message=F}
+library(dplyr)
+library(tidyr)
+library(snakecase)
+library(fitzRoy)
+```
+
+```{r}
+# setting the start data to 2020-01-01 only loads in 2020 data
+afltables <- get_afltables_stats(start_date = '2020-01-01')
+# clean up the column names
+names(afltables) <- to_snake_case(names(afltables))
+```
+
+# Recap
+
+From the previous post, we were introduced to the a couple of `dplyr` functions: `select`, `group_by`, `summarise`, `mutate`, `filter` and `arrange`. Let's put them together to answer the following questions:
+
+> Q1. Which player averaged the highest contested possessions?
+
+> Q2. Which team per round had the highest ratio of kicks to handballs?
+
+
+### Q1. Which player averaged the highest contested possessions?
+
+First step, select the columns we need. Records in `afltables` are at a player level, ie each row is a player.
+
+```{r}
+afltables %>% 
+  select(playing_for, id, first_name, surname, contested_possessions)
+```
+
+The raw data looks good, so now we can group by each player to find out their average contested possessions. Remember to drop the grouping after the `summarise` function.
+
+```{r}
+afltables %>% 
+  select(playing_for, id, first_name, surname, contested_possessions) %>% 
+  group_by(playing_for, id, first_name, surname) %>% 
+  summarise(
+    avg_cont_pos = mean(contested_possessions),
+    .groups = 'drop' # drop the grouping
+  )
+```
+
+Each player now has their average, lets arrange the data in descending order (highest at the top).
+
+```{r}
+afltables %>% 
+  select(playing_for, id, first_name, surname, contested_possessions) %>% 
+  group_by(playing_for, id, first_name, surname) %>% 
+  summarise(
+    avg_cont_pos = mean(contested_possessions),
+    .groups = 'drop' # drop the grouping
+  ) %>% 
+  arrange(desc(avg_cont_pos))
+```
+
+Let's make a small adjustment to the `summarise`, adding in the amount of games played this season, and we can also add in another stat, for example average handballs per game (which we are going to arrange by).
+
+```{r}
+afltables %>% 
+  select(playing_for, id, first_name, surname, contested_possessions, handballs) %>% 
+  group_by(playing_for, id, first_name, surname) %>% 
+  summarise(
+    avg_cont_pos = mean(contested_possessions),
+    avg_handballs = mean(handballs),
+    n = n(), #n() counts the amount of rows in this group
+    .groups = 'drop' # drop the grouping
+  ) %>% 
+  arrange(desc(avg_handballs)) %>% 
+  select(-id) # a '-' in before a column drops it
+```
+
+Interesting to note that Collingwood's Brayden Sier played 3 games averaging over 12 handballs, so maybe we want to `filter` out players with a low amount of games.
+
+```{r}
+afltables %>% 
+  select(playing_for, id, first_name, surname, contested_possessions, handballs) %>% 
+  group_by(playing_for, id, first_name, surname) %>% 
+  summarise(
+    avg_cont_pos = mean(contested_possessions),
+    avg_handballs = mean(handballs),
+    n = n(), #n() counts the amount of rows in this group
+    .groups = 'drop' # drop the grouping
+  ) %>% 
+  filter(n > 10) %>% #games greater than 10
+  arrange(desc(avg_handballs)) %>% 
+  select(-id) # a '-' in before a column drops it
+```
+
+Adding ` %>% View()` to the end of the pipeline brings up an interactive spreadsheet, very useful for interacting with the data.
+
+### Q2. Which team per round had the highest ratio of kicks to handballs?
+
+Using the same process as before, but we now need to group by 2 columns, `round` and `playing_for`. We are going to sum the handballs and kicks for each game.
+
+```{r}
+afltables %>% 
+  select(round, playing_for, kicks, handballs) %>% 
+  group_by(round, playing_for) %>% 
+  summarise(
+    s_kicks = sum(kicks),
+    s_hball = sum(handballs),
+    .groups = 'drop'
+  )
+```
+
+We have the total kicks and handballs for each team in each round, and we can use `mutate` to perform a calculation.
+
+```{r}
+afltables %>% 
+  select(round, playing_for, kicks, handballs) %>% 
+  group_by(round, playing_for) %>% 
+  summarise(
+    s_kicks = sum(kicks),
+    s_hball = sum(handballs),
+    .groups = 'drop'
+  ) %>% 
+  mutate(ratio = s_kicks/s_hball*100) %>% 
+  arrange(ratio)
+```
+
+You can add ` %>% View` to view the data interactively. I'd also recommend using the filter button to further sort your data.
+
+# Calculating Home vs Away and wins
+
+The data that we import into R doesn't record whether the players were Home or Away, or if the result was a draw or loss. We are going to add these in using `mutate` and `case_when`, a powerful tool that allows multiple `if_else` statements.
+
+### Home vs Away
+
+We are going to create a new column named `h_a`. `afltables` provides a column with the home team's name, and another column of the team the player is playing for, and we can use this with a bit of logic in an `if_else` statement.
+
+```{r}
+afltables %>% 
+  select(playing_for, id, first_name, surname, home_team, away_team) %>% 
+  mutate(
+    h_a = if_else(playing_for == home_team, 'H', 'A')
+  )
+```
+### Wins and Losses
+
+In order to calculate whether there was a win or loss, we need to do something similar. `afltables` has home team and home score which we can use to reverse engineer a win loss column. Creating a new column `w_l` using a `dplyr` function, `case_when`
+
+```{r}
+afltables %>% 
+  select(id, first_name, surname, playing_for, home_team, away_team, home_score, away_score) %>% 
+  mutate(
+    w_l = case_when(
+      playing_for == home_team & home_score > away_score ~ 'W',
+      playing_for == home_team & home_score < away_score ~ 'L',
+      playing_for == away_team & away_score > home_score ~ 'W',
+      playing_for == away_team & away_score < home_score ~ 'L',
+      TRUE ~ 'D'
+    )
+  ) # %>% View()
+```
+
+Translated to English
+
+* IF playing for is the same as the home team AND home score is greater than away score THEN it's a win ELSE
+* IF playing for is the same as the home team AND home score is less than away score THEN it's a win ELSE
+* IF playing for is the same as the away team AND home score is greater than away score THEN it's a win ELSE
+* IF playing for is the same as the away team AND home score is less than away score THEN it's a win ELSE
+* Its a draw
+
+### All together now
+
+This type of calculation should be completed when you first load in the data, which might look something like this.
+
+```{r}
+# setting the start data to 2020-01-01 only loads in 2020 data
+afltables <- get_afltables_stats(start_date = '2020-01-01')
+# clean up the column names
+names(afltables) <- to_snake_case(names(afltables))
+
+# create a new dataset with a combined mutate function
+afltables_new <- afltables %>% 
+  mutate(
+    h_a = if_else(playing_for == home_team, 'H', 'A'),
+    w_l = case_when(
+      playing_for == home_team & home_score > away_score ~ 'W',
+      playing_for == home_team & home_score < away_score ~ 'L',
+      playing_for == away_team & away_score > home_score ~ 'W',
+      playing_for == away_team & away_score < home_score ~ 'L',
+      TRUE ~ 'D'
+    )
+  )
+
+#View(afltables_new)
+```
+
+This allows for more in depth analysis, as you can now filter out losses, group by wins, and compare away to home performances. Here's a basic example: Who had the most losses this season?
+
+```{r}
+afltables_new %>% 
+  group_by(playing_for, id, first_name, surname, w_l) %>% 
+  count() %>% 
+  filter(w_l == 'L') %>% 
+  arrange(desc(n))
+```
+
+
+# Conclusion
+
+Thanks for completing this tutorial, you can check out the script I used to generate this analysis [here](https://github.com/liam-crow/stats-blog/tree/master/content/post){target="blank"}. You can ask me questions about the tutorial at my twitter [\@crow_data_sci](https://twitter.com/crow_data_sci){target="blank"}. My DM's are always open!
+
+Next tutorial will be on the topic of `ggplot`, R's plotting and charting tools, and we'll be creating some pretty cool charts!

@@ -6,10 +6,20 @@
     <description>Recent content in AFL Data Tutorial on Crow Data Science</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Thu, 16 Jul 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Tue, 27 Oct 2020 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/categories/afl-data-tutorial/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>AFL Analytics with Useless AFL Stats - Part 2</title>
+      <link>/afl-analytics-data-r-part-2/</link>
+      <pubDate>Tue, 27 Oct 2020 00:00:00 +0000</pubDate>
+      
+      <guid>/afl-analytics-data-r-part-2/</guid>
+      <description>Welcome to Part 2 of a beginners guide to AFL analytics and programming in R! This post will be following directly on from my first post, which you can access here. It covers the main points of installing R and RStudio and loading AFL data into your workspace.
+If you have any questions during this tutorial, you can tweet at me @crow_data_sci. If you’ve got a useless stat, feel free to message at us Useless AFL Stats.</description>
+    </item>
     
     <item>
       <title>Introduction to AFL Analytics with Useless AFL Stats</title>
