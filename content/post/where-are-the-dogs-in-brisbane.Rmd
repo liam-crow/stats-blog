@@ -1,11 +1,10 @@
 ---
 title: Where are the Dogs in Brisbane?
 author: Liam Crowhurst
-date: '2020-07-31'
+date: '2021-08-12'
 slug: where-are-the-dogs-in-brisbane
 tags:
   - R
-  - Useless AFL Stats
 output: html_document
 banner: ''
 description: 'Interactive bar charts showing suburb and breed for each registered dog in the Brisbane City Council'
