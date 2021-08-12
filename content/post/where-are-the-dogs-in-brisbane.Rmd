@@ -1,0 +1,34 @@
+---
+title: Where are the Dogs in Brisbane?
+author: Liam Crowhurst
+date: '2020-07-31'
+slug: where-are-the-dogs-in-brisbane
+tags:
+  - R
+  - Useless AFL Stats
+output: html_document
+banner: ''
+description: 'Interactive bar charts showing suburb and breed for each registered dog in the Brisbane City Council'
+images: []
+menu: ''
+disable_profile: true 
+disable_widgets: true
+---
+
+The Brisbane City Council has an Open Data website, which hosts a wide variety of open source data, freely available for download. I've created a small self contained app that collates and visualises the 'Animal Permits' csv. I've created 2 basic visualisations using Rshiny and Plotly, showing the top 15 data points.
+
+```{css, echo=FALSE}
+#main {
+    display: inline;
+    float: left;
+    width: 1200px;
+}
+```
+
+<div class="container"><div class="h_iframe"><iframe  src="https://crowdatascience.shinyapps.io/where_are_the_dogs/" frameborder="0" height="700px" width="1100" position="absolute"></iframe></div></div>
+
+The interactive components are hosted on https://www.shinyapps.io/ for free.
+
+Next step would be to assign each suburb a latitude and longitude coordinate, and plot the resulting density of a specific breed on a map using `leaflet`.
+
+You can access the raw data from the BCC open data website [here](https://www.data.brisbane.qld.gov.au/data/dataset/current-animal-related-permits/resource/c2823090-8a44-4c8b-9ed4-e988491b25f4){target="blank"} and the source code for this app [here](https://github.com/liam-crow/shiny-apps/tree/master/where-are-the-dogs). `animal_permits.rds` is a clean version of the data that is used by the app, while `animal_permits_july_2021.csv` is the raw data.
