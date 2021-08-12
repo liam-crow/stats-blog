@@ -6,10 +6,20 @@
     <description>Recent content on Crow Data Science</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 27 Oct 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Thu, 12 Aug 2021 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Where are the Dogs in Brisbane?</title>
+      <link>/where-are-the-dogs-in-brisbane/</link>
+      <pubDate>Thu, 12 Aug 2021 00:00:00 +0000</pubDate>
+      
+      <guid>/where-are-the-dogs-in-brisbane/</guid>
+      <description>The Brisbane City Council has an Open Data website, which hosts a wide variety of open source data, freely available for download. I’ve created a small self contained app that collates and visualises the ‘Animal Permits’ csv. I’ve created 2 basic visualisations using Rshiny and Plotly, showing the top 15 data points.
+#main {display: inline;float: left;width: 1200px;}The interactive components are hosted on https://www.</description>
+    </item>
     
     <item>
       <title>AFL Analytics with Useless AFL Stats - Part 2</title>

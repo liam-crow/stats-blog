@@ -24,7 +24,7 @@ The Brisbane City Council has an Open Data website, which hosts a wide variety o
 }
 ```
 
-<div class="container"><div class="h_iframe"><iframe  src="https://crowdatascience.shinyapps.io/where_are_the_dogs/" frameborder="0" height="700px" width="1100" position="absolute"></iframe></div></div>
+<div class="container"><div class="h_iframe"><iframe  src="https://crowdatascience.shinyapps.io/where_are_the_dogs/" frameborder="0" height="1200px" width="1150" position="absolute"></iframe></div></div>
 
 The interactive components are hosted on https://www.shinyapps.io/ for free.
 
