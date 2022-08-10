@@ -6,10 +6,20 @@
     <description>Recent content in Useless AFL Stats on Crow Data Science</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 27 Oct 2020 00:00:00 +0000</lastBuildDate>
+    <lastBuildDate>Wed, 10 Aug 2022 00:00:00 +0000</lastBuildDate>
     
 	<atom:link href="/tags/useless-afl-stats/index.xml" rel="self" type="application/rss+xml" />
     
+    
+    <item>
+      <title>Introduction to AFL Analytics with Useless AFL Stats</title>
+      <link>/introduction-afl-analytics-data-r/</link>
+      <pubDate>Wed, 10 Aug 2022 00:00:00 +0000</pubDate>
+      
+      <guid>/introduction-afl-analytics-data-r/</guid>
+      <description>I’m co-admin of a little page on Facebook that caters to a niche audience of AFL statistics nerds known as Useless AFL Stats, where (founder and co-admin) Aaron and I discover stats that have no relevance to anything at all, and will never be useful to anyone, ever. And that got me thinking, why should I have all the fun finding these nuggets of gold?
+I’m a firm believer in open source programming and open data, the philosophy that as much data should be made publicly available as possible to the largest possible audience.</description>
+    </item>
     
     <item>
       <title>AFL Analytics with Useless AFL Stats - Part 2</title>
@@ -29,16 +39,6 @@ If you have any questions during this tutorial, you can tweet at me @crow_data_s
       <guid>/useless-afl-stats-dashboard/</guid>
       <description>#main {display: inline;float: left;width: 1200px;}Glossary:
 hq_1_g: Home Q1 Goalshq_1_b: Home Q1 Behindsaq_x_x: Awaypq_x_x: Playing foroq_x_x: Opposition</description>
-    </item>
-    
-    <item>
-      <title>Introduction to AFL Analytics with Useless AFL Stats</title>
-      <link>/introduction-afl-analytics-data-r/</link>
-      <pubDate>Thu, 16 Jul 2020 00:00:00 +0000</pubDate>
-      
-      <guid>/introduction-afl-analytics-data-r/</guid>
-      <description>I’m co-admin of a little page on Facebook that caters to a niche audience of AFL statistics nerds known as Useless AFL Stats, where (founder and co-admin) Aaron and I discover stats that have no relevance to anything at all, and will never be useful to anyone, ever. And that got me thinking, why should I have all the fun finding these nuggets of gold?
-I’m a firm believer in open source programming and data, the idea that as much data should be made publicly available as possible to the largest possible audience.</description>
     </item>
     
   </channel>
