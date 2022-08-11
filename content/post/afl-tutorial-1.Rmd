@@ -26,7 +26,7 @@ That's why I'll be taking you on a journey from beginner to expert, to give you 
   + Rstudio installation and setup
 * Basics of R
 * Downloading AFL data
-* Creating your first useless AFL stat
+* Creating your first AFL stat
 
 If you have any questions during this tutorial, you can tweet at me [\@crow_data_sci](https://twitter.com/crow_data_sci){target="blank"}. If you've got a useless stat, feel free to tweet at us [\@UselessStatsAFL](https://twitter.com/UselessStatsAFL){target="blank"} or message our facebook page.
 
@@ -115,10 +115,9 @@ install.packages("dplyr")    #data manipulation tools
 install.packages("tidyr")    #more data manipulation tools
 install.packages("snakecase")#data cleaning tool
 install.packages("hms")      #date formatting
-devtools::install_github("jimmyday12/fitzRoy") #package that loads afltables into R
+install.packages("fitzRoy")  #get AFL data - mind the capital R
+# devtools::install_github("jimmyday12/fitzRoy") #get the dev version - advanced
 ```
-
-Ignore the warning about "Rtools", it's a windows development tool that we won't be using.
 
 ## Loading packages
 
@@ -227,7 +226,7 @@ And there we have it, your first AFL stat. You should see Dayne Zorko up the top
 
 Grouping is a powerful tool we use to group certain values in columns. An example of this would be season, where each year is essentially its own category, and we can run commands that (for example) take the average amount of goals per team. Lets put this into practice with a simple example based off data we already have answering the following question:
 
-> Which season has the highest accuracy?
+> Which team has the highest accuracy?
 
 Lets pull in the data we need to create this stat. We need to sum the total goals and behinds per team.
 
